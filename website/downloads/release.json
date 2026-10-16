@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "channel": "stable",
+  "repo": "ShubkaDev/SMLauncher",
+  "installer": "https://github.com/ShubkaDev/SMLauncher/releases/latest/download/SMLauncherSetup-1.0-win-x64.exe",
+  "portable": "https://github.com/ShubkaDev/SMLauncher/releases/latest/download/SMLauncher-1.0-win-x64-portable.zip",
+  "filename": "SMLauncherSetup-1.0-win-x64.exe",
+  "download_url": "https://github.com/ShubkaDev/SMLauncher/releases/latest/download/SMLauncherSetup-1.0-win-x64.exe",
+  "portable_filename": "SMLauncher-1.0-win-x64-portable.zip",
+  "portable_download_url": "https://github.com/ShubkaDev/SMLauncher/releases/latest/download/SMLauncher-1.0-win-x64-portable.zip",
+  "platform": "windows-x64",
+  "source": "github-releases"
+}

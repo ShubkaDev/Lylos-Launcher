@@ -1,117 +1,221 @@
-# lylos-launcher
+<div align="center">
 
-***
-##  С чего начать?
-Для того, чтобы облегчить знакомство с сервисом GitFlic и первые шаги в нём, мы подготовили несколько рекомендаций.  
-Уже опытный пользователь? Отредактируйте данный **README** файл по своему усмотрению.  
-Не знаете что добавить в него? Перейдите в раздел `"Что должен содержать README файл"`, в котором описаны ключевые компоненты хорошего README файла. 
+# ⛏️ Lylos Launcher
 
-## Добавьте свои файлы
-Если вы решили начать разработку проекта с создания репозитория в нашем сервисе, тогда клонируйте себе данный репозиторий следующим образом:
+**Современный open-source лаунчер Minecraft для Windows**
 
+<p>
+  <img src="assets/LL.png" alt="Lylos Launcher" width="140">
+</p>
 
+**Управляй сборками, модами, мирами и аккаунтами — всё в одном красивом окне.**
+
+[🚀 Скачать](https://github.com/ShubkaDev/SMLauncher/releases/latest) •
+[🌐 Сайт](https://ShubkaDev.github.io/SMLauncher/) •
+[🐛 Сообщить о баге](https://github.com/ShubkaDev/SMLauncher/issues/new)
+
+![Python](https://img.shields.io/badge/Python-3.12+-3572A5?style=flat&logo=python&logoColor=white)
+![PySide6](https://img.shields.io/badge/UI-PySide6%20%2F%20Qt6-41B883?style=flat)
+![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-0078D7?style=flat&logo=windows&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat)
+![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat)
+
+</div>
+
+---
+
+## ✨ Что это?
+
+**Lylos Launcher** — полностью открытый десктоп-лаунчер Minecraft, написанный на **Python + PySide6 (Qt6)**. Он умеет всё, что нужно современному игроку:
+
+- создавать и запускать **отдельные сборки** с разными версиями Minecraft;
+- ставить **моды, шейдеры, ресурспаки и модпаки** прямо из Modrinth;
+- добавлять **миры и моды** из ZIP/JAR-архивов в пару кликов;
+- управлять **аккаунтами** — Offline и Ely.by (со скинами!);
+- автоматически **скачивать Java** и настраивать RAM;
+- обновляться **сам** через `realese.json` на сайте проекта (fallback — GitHub Releases).
+
+> 🎨 Красивый тёмный интерфейс, видео-фон при первом запуске и встроенные скины Steve / Alex — из коробки.
+
+---
+
+## ✨ Возможности
+
+| | | |
+|---|---|---|
+| 🗂️ **Сборки** | Vanilla, Fabric, Forge, NeoForge, Quilt — создание, запуск, экспорт и импорт `.zip` |
+| 🧩 **Моды** | Каталог Modrinth, установка модов/шейдеров/ресурспаков, импорт `.mrpack` |
+| 🌍 **Миры** | Добавление миров из ZIP с автоматической распаковкой вложенных архивов |
+| 👤 **Аккаунты** | Offline-профили и Ely.by OAuth, локальные скины Steve/Alex, CustomSkinLoader |
+| ☕ **Java** | Автоскачивание Temurin JRE под нужную версию Minecraft |
+| ⚙️ **Настройки** | RAM, разрешение окна, папки данных, 6 тем оформления |
+| 🔄 **Обновления** | Проверка `realese.json` на сайте проекта + fallback GitHub Releases |
+
+---
+
+## ✨ Скриншоты
+
+> Скриншоты будут добавлены позже. А пока — просто запусти и посмотри 😉
+
+| Экран входа | Главная | Сборки |
+|---|---|---|
+| Видео-фон + панель Lylos Launcher | Быстрый запуск активной сборки | Карточки с кнопками «Добавить мод/мир» |
+
+---
+
+## ✨ Быстрый старт
+
+### Готовый бинарник
+
+1. Скачай последний релиз: [releases/latest](https://github.com/ShubkaDev/SMLauncher/releases/latest)
+2. Запусти `LylosLauncher.exe` (или установи через `LylosSetup.exe`)
+3. Создай аккаунт — Offline или через Ely.by
+4. Создай сборку и жми **Играть** 🚀
+
+### Из исходников
+
+```powershell
+# 1. Клонируй
+git clone https://github.com/ShubkaDev/SMLauncher.git
+cd SMLauncher
+
+# 2. Виртуальное окружение
+python -m venv .venv
+.\.venv\Scripts\activate
+
+# 3. Зависимости
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+
+# 4. Запуск
+python main.py
 ```
-git clone https://gitflic.ru/project/shubkadev/lylos-launcher.git
-cd lylos-launcher
-**добавьте первые файлы вашего проекта**
-git add .
-git commit -m "Первый коммит"
-git push -u origin master
+
+> 💡 При запуске из Python данные хранятся в `data/`, `instances/`, `logs/` внутри проекта. Собранный `.exe` использует `%APPDATA%\SMLauncher`.
+
+---
+
+## ✨ Разработка
+
+### Структура проекта
+
+```text
+SMLauncher/
+├─ app/                 # Главное окно, маршрутизация страниц
+├─ auth/                # Аккаунты: Offline, Ely.by OAuth
+├─ core/                # Запуск Minecraft, Java, updater, настройки
+│  ├─ archive_importer.py   # Импорт миров и модов из ZIP/JAR
+│  ├─ default_skins.py      # Встроенные скины Steve / Alex
+│  └─ ...
+├─ mods/                # Modrinth API, установка контента, совместимость
+├─ storage/             # Пути и JSON-хранилище
+├─ ui/                  # PySide6-компоненты, страницы, стили
+│  ├─ components/account_setup_window.py  # Экран входа с видео-фоном
+│  └─ ...
+├─ updater/             # SMUpdater — отдельное окно обновления
+├─ installer/           # Inno Setup installer
+├─ scripts/             # Build / release скрипты
+├─ tools/               # Диагностика, QA, генерация metadata
+├─ tests/               # unittest-проверки
+├─ website/             # Продакшен-сайт GitHub Pages
+├─ realese.json         # Версия и ссылки для автообновления (публикуется на Pages)
+├─ main.py              # Точка входа GUI
+└─ requirements.txt     # Python-зависимости
 ```
 
-Уже что-то делали в проекте? В таком случае инициализируйте гит-репозиторий в корне проекта и добавьте текущий репозиторий как удалённый репозиторий:
+### Проверки перед релизом
 
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests
+.\.venv\Scripts\python.exe tools\deep_qa.py
+.\.venv\Scripts\python.exe tools\full_audit.py
 ```
-cd existing_folder
-git init
-git remote add origin https://gitflic.ru/project/shubkadev/lylos-launcher.git
-git clone
-**добавьте новые файлы**
-git add .
-git commit -m "Новый коммит"
-git push -u origin master
+
+### Сборка релиза
+
+Сборка лаунчера идёт через `build_all.bat` — он делает всё автоматически:
+
+```bat
+build_all.bat
 ```
-***
 
+Скрипт по порядку:
 
-# Что должен содержать README файл
+1. скачивает видео-фон в `assets\video-panarama\1.mp4` (при неудаче открывает страницу для ручного скачивания);
+2. проверяет наличие Python 3.12+ — если его нет, показывает ошибку и ждёт 10 секунд;
+3. при необходимости устанавливает зависимости из `requirements.txt`;
+4. спрашивает OAuth Client ID / Client Secret и настраивает их локально;
+5. последовательно собирает через PyInstaller:
+   - `LylosLauncher.exe` — основной лаунчер;
+   - `LylosUpdater.exe` — обновлятор;
+   - `LylosUninstaller.exe` — удалятор;
+   - `LylosSetup.exe` — установщик.
 
+Результаты попадают в `release/`. Публикация GitHub Release — через tag workflow `v*`.
 
-Прежде всего, стоит понимать, что `README.md` — это краткая документация. Это первое, что видит человек, который открывает репозиторий. Поэтому здесь важно дать достаточно информации о проекте и рассказать, что он из себя представляет.
-Ключевая информация, которую должен содержать README файл:
+---
 
-## Название и описание
-Название проекта должно быть простым и понятным (чаще всего это одно слово).
-Описание должно описывать основные функции проекта, включая его особенности и назначение. 
-Если у вашего проекта есть альтернативные проекты, то в описании можно перечислить ключевые отличия, которые выделяют ваш проект на фоне всех остальных.
+## ✨ Технологии
 
-## Установка и настройка
-Также в `README` файле рекомендуется перечислить необходимые инструкции для установки, 
-будь то использование пакетных менеджеров (например, `Homebrew` на MacOS или `apt` на Linux), 
-зависимости, которые могут понадобиться в ходе использования, а также шаги по их настройке.
+| Слой | Стек |
+|---|---|
+| **Язык** | Python 3.12+ |
+| **GUI** | PySide6 (Qt 6) |
+| **Запуск Minecraft** | `minecraft_launcher_lib` |
+| **Каталог модов** | Modrinth API |
+| **Авторизация** | Ely.by OAuth 2.0 (локальный callback-сервер) |
+| **Сборка** | PyInstaller + Inno Setup |
+| **Сайт** | Статический HTML/CSS/JS на GitHub Pages |
+| **CI** | GitHub Actions (Python 3.12) |
 
-## Совместная разработка
-Можно добавить информацию о том, как принять участие в разработке вашего проекта, как стать непосредственным участником, правила оформления pull-requests и т.д.
+---
 
-## Контакты
-Ссылки на внешние ресурсы, такие как документация, блог, страница проекта в социальных сетях, сообщество проекта и т.д.
+## ✨ Частые вопросы
 
-## Статус проекта
-В данном разделе рекомендуется указывать, на какой стадии находится проект, активно разрабатывается или находится в стадии застоя.
-Если же проект готов и во всю используется, можно указывать актуальную версию, а также последние изменения, которые были сделаны с момента предыдущего релиза.
+<details>
+<summary><b>Сборки не видны в .exe?</b></summary>
 
-***
+Python-запуск и `.exe` используют разные хранилища данных. Проверь `%APPDATA%\SMLauncher\data\instances.json`.
+</details>
 
-# Полезные ссылки
+<details>
+<summary><b>Моды не устанавливаются?</b></summary>
 
-***
+Проверь выбранную сборку, loader, совместимость версии Minecraft, интернет и `logs/latest.log`.
+</details>
 
-## Работа с проектом
+<details>
+<summary><b>Minecraft не запускается из-за Java?</b></summary>
 
-- [ ] [Как создать проект](https://docs.gitflic.ru/project/project_create)
-- [ ] [Как импортировать проект](https://docs.gitflic.ru/project/import_base)
-- [ ] [Запросы на слияние](https://docs.gitflic.ru/project/merge_request)
-- [ ] [Зеркалирование проекта](https://docs.gitflic.ru/project/mirror)
-- [ ] [Импортировать проект с GitLab](https://docs.gitflic.ru/project/import)
+Проверь `java -version`, путь Java в настройках и `logs/latest.log`. Лаунчер умеет скачивать Java автоматически.
+</details>
 
-## Команды
-- [ ] [Создание команды](https://docs.gitflic.ru/team/create)
-- [ ] [Обзор команды](https://docs.gitflic.ru/team/view)
-- [ ] [Настройка команды](https://docs.gitflic.ru/team/settings)
+<details>
+<summary><b>Как добавить мир или мод из архива?</b></summary>
 
-## Реестр пакетов
-- [ ] [Реестр пакетов](https://docs.gitflic.ru/registry/package)
-- [ ] [PyPi](https://docs.gitflic.ru/registry/pypi_registry)
-- [ ] [Generic](https://docs.gitflic.ru/registry/generic_registry)
-- [ ] [Maven](https://docs.gitflic.ru/registry/maven_registry)
-- [ ] [Docker](https://docs.gitflic.ru/registry/docker)
+В карточке сборки нажми **«+ Добавить мир»** или **«+ Добавить мод»** и выбери ZIP/JAR. Лаунчер сам распакует вложенные архивы и разложит файлы по папкам `saves/` и `mods/`.
+</details>
 
-## Компании
-- [ ] [Создание компании](https://docs.gitflic.ru/company/create)
-- [ ] [Обзор компании](https://docs.gitflic.ru/company/view)
-- [ ] [Тарифы и оплата](https://docs.gitflic.ru/company/price)
-- [ ] [Запуск агента компании](https://docs.gitflic.ru/company/saas_runner_setup)
+---
 
-## CI/CD
-- [ ] [Что такое GitFlic CI/CD](https://docs.gitflic.ru/cicd/introduction)
-- [ ] [Задача (Job)](https://docs.gitflic.ru/cicd/job)
-- [ ] [Конвейер (pipeline)](https://docs.gitflic.ru/cicd/pipeline)
-- [ ] [Агенты](https://docs.gitflic.ru/cicd/agent)
-- [ ] [Справочник для .yaml файла](https://docs.gitflic.ru/cicd/gitflic-ci-yaml)
+## ✨ Участие
 
-## API
-- [ ] [Введение в GitFlic API](https://docs.gitflic.ru/api/intro)
-- [ ] [Методы для администратора](https://docs.gitflic.ru/api/admin)
-- [ ] [Получение access токена](https://docs.gitflic.ru/api/access-token)
+Проект полностью открыт — форкай, правь, предлагай!
 
+1. [Fork](https://github.com/ShubkaDev/SMLauncher/fork) репозитория
+2. Создай ветку `feature/имя-фичи`
+3. Внеси изменения и открой **Pull Request**
 
-## Панель администратора
-- [ ] [Панель администратора](https://docs.gitflic.ru/admin_panel/intro)
-- [ ] [Панель управления](https://docs.gitflic.ru/admin_panel/dashboard)
-- [ ] [Настройка LDAP](https://docs.gitflic.ru/admin_panel/ldap)
-- [ ] [Ключевые настройки](https://docs.gitflic.ru/admin_panel/settings)
+---
 
-## Общая информация
-- [ ] [Глоссарий](https://docs.gitflic.ru/common/gloss)
-- [ ] [Права доступа ролей](https://docs.gitflic.ru/common/manage_roles)
-- [ ] [Вебхуки](https://docs.gitflic.ru/common/webhook)
+## ✨ Лицензия
+
+**MIT** — проект можно свободно форкать, изменять и распространять. См. [LICENSE](LICENSE).
+
+> ⚠️ Lylos Launcher — неофициальный open-source проект. Он **не связан** с Mojang, Microsoft, Fabric, Forge, NeoForge, Quilt или Modrinth. Minecraft — товарный знак Mojang/Microsoft.
+
+<div align="center">
+
+**Сделано с 💜 для Minecraft-сообщества**
+
+</div>

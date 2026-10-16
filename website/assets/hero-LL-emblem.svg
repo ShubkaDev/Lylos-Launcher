@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.6"/>
+      <stop offset="60%" stop-color="#7C3AED" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="smg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="55%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+  <circle cx="180" cy="180" r="168" fill="url(#glow)"/>
+  <circle cx="180" cy="180" r="134" fill="none" stroke="rgba(34,211,238,0.22)" stroke-width="2"/>
+  <circle cx="180" cy="180" r="112" fill="none" stroke="rgba(139,92,246,0.4)" stroke-width="2" stroke-dasharray="7 11"/>
+  <rect x="66" y="66" width="228" height="228" rx="54" fill="url(#smg)"/>
+  <rect x="66" y="66" width="228" height="228" rx="54" fill="none" stroke="rgba(255,255,255,0.42)" stroke-width="3"/>
+  <text x="180" y="216" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="98" font-weight="800" fill="#ffffff">LL</text>
+  <circle cx="48" cy="214" r="9" fill="#22D3EE"/>
+  <circle cx="312" cy="146" r="9" fill="#A78BFA"/>
+  <circle cx="296" cy="268" r="6" fill="rgba(255,255,255,0.75)"/>
+</svg>
