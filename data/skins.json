@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "skins": [
+    {
+      "id": "6ec63c34-d00e-4d82-8b80-2b46638b2ca2",
+      "name": "Ely.by Shubka_youtube",
+      "filename": "6ec63c34-d00e-4d82-8b80-2b46638b2ca2.png",
+      "path": "C:\\Users\\User\\Videos\\Nexus_mincraft_laucher-main\\data\\skins\\6ec63c34-d00e-4d82-8b80-2b46638b2ca2.png",
+      "width": 64,
+      "height": 64,
+      "model": "classic",
+      "created_at": 1792083043,
+      "updated_at": 1792083043
+    },
+    {
+      "id": "2aad726e-4cdc-45fc-9939-6c28e736f0cc",
+      "name": "Steve (встроенный)",
+      "filename": "2aad726e-4cdc-45fc-9939-6c28e736f0cc.png",
+      "path": "C:\\Users\\User\\Videos\\Nexus_mincraft_laucher-main\\data\\skins\\2aad726e-4cdc-45fc-9939-6c28e736f0cc.png",
+      "width": 64,
+      "height": 32,
+      "model": "classic",
+      "created_at": 1791891476,
+      "updated_at": 1791891476
+    },
+    {
+      "id": "3a5c1291-da97-495d-bc05-354bc1728fdc",
+      "name": "Alex (встроенный)",
+      "filename": "3a5c1291-da97-495d-bc05-354bc1728fdc.png",
+      "path": "C:\\Users\\User\\Videos\\Nexus_mincraft_laucher-main\\data\\skins\\3a5c1291-da97-495d-bc05-354bc1728fdc.png",
+      "width": 64,
+      "height": 64,
+      "model": "slim",
+      "created_at": 1791723309,
+      "updated_at": 1791723309
+    }
+  ]
+}

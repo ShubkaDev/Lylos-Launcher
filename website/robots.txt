@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://shubkadev.github.io/SMLauncher/sitemap.xml

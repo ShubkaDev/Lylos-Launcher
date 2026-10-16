@@ -1,0 +1,97 @@
+{
+  "tasks": [
+    {
+      "id": "6a7630c4-fa93-4492-9da5-99769cf89345",
+      "kind": "minecraft",
+      "title": "Запуск Minecraft: lll",
+      "subtitle": "26.3 • vanilla",
+      "status": "Ошибка запуска",
+      "progress": 100,
+      "total": 100,
+      "state": "failed",
+      "created_at": 1790600219,
+      "updated_at": 1790600456,
+      "finished_at": 1790600456,
+      "error": "Для этой версии Minecraft нужна Java 25 или новее.\n\nСейчас найдена Java 17:\nC:\\Program Files\\Common Files\\Oracle\\Java\\javapath_target_427843\\java.exe\n\nNexus может открыть страницу скачивания Java 25.",
+      "metadata": {
+        "instance_id": "d1f4eb17-9177-4643-b397-4981843ba7df",
+        "instance_name": "lll"
+      }
+    },
+    {
+      "id": "d2291c82-e372-49f4-ba9e-902f46308eec",
+      "kind": "mod",
+      "title": "Установка мода: Iris Shaders",
+      "subtitle": "Сборка: lol",
+      "status": "Мод установлен",
+      "progress": 100,
+      "total": 100,
+      "state": "completed",
+      "created_at": 1790600184,
+      "updated_at": 1790600188,
+      "finished_at": 1790600188,
+      "error": null,
+      "metadata": {
+        "project_id": null,
+        "slug": "iris",
+        "instance_id": "aa6356aa-c069-42f8-a326-f293fedba949"
+      },
+      "downloaded_bytes": 971376,
+      "total_bytes": 971376,
+      "speed_bps": 2426540
+    },
+    {
+      "id": "17694feb-23bd-441e-a2c7-aed35da1fb4a",
+      "kind": "shader",
+      "title": "Установка шейдера: Rethinking Voxels",
+      "subtitle": "Сборка: lol",
+      "status": "Шейдер установлен",
+      "progress": 100,
+      "total": 100,
+      "state": "completed",
+      "created_at": 1790600167,
+      "updated_at": 1790600171,
+      "finished_at": 1790600171,
+      "error": null,
+      "metadata": {
+        "project_id": "kmwfVOoi",
+        "slug": "rethinking-voxels",
+        "instance_id": "aa6356aa-c069-42f8-a326-f293fedba949"
+      },
+      "downloaded_bytes": 8301317,
+      "total_bytes": 8301317,
+      "speed_bps": 4094243
+    },
+    {
+      "id": "a49d1aeb-2fee-4e59-8a4a-e96019e57bf1",
+      "kind": "minecraft",
+      "title": "Запуск Minecraft: lol",
+      "subtitle": "1.20.1 • fabric",
+      "status": "Minecraft запущен",
+      "progress": 100,
+      "total": 100,
+      "state": "completed",
+      "created_at": 1790599815,
+      "updated_at": 1790600084,
+      "finished_at": 1790600084,
+      "error": null,
+      "metadata": {
+        "instance_id": "aa6356aa-c069-42f8-a326-f293fedba949",
+        "instance_name": "lol"
+      }
+    },
+    {
+      "id": "d55db103-2345-4f38-a4e9-c866cf557804",
+      "kind": "system",
+      "title": "Центр загрузок подключён",
+      "subtitle": "Nexus Downloads Center",
+      "status": "Раздел «Загрузки» теперь работает",
+      "progress": 100,
+      "state": "completed",
+      "created_at": 1790599764,
+      "updated_at": 1790599764,
+      "finished_at": 1790599764,
+      "error": null
+    }
+  ]
+}

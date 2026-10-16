@@ -1,0 +1,387 @@
+import json
+import logging
+import shutil
+import subprocess
+import threading
+from pathlib import Path
+
+import minecraft_launcher_lib
+from auth.account_manager import AccountManager
+import requests
+
+from core.java_manager import (
+    find_java_executable,
+    get_required_java_major,
+    ensure_java_is_compatible,
+)
+from core.loader_manager import LoaderManager, get_loader_manager
+from core.constants import APP_DISPLAY_NAME, APP_VERSION
+from core.instance_manager import get_instance_manager
+from core.launcher_settings import get_launcher_settings
+
+
+logger = logging.getLogger(__name__)
+
+_MIN_DISK_SPACE_MB = 500
+
+
+def _managed_java_fallback(required_major: int):
+    """Use an already-downloaded managed Java runtime if present."""
+    try:
+        from core.java_downloader import find_managed_java
+
+        managed = find_managed_java(required_major)
+        if managed and managed.is_file():
+            logger.info("Using managed Java %s: %s", required_major, managed)
+            return str(managed)
+    except Exception:
+        logger.debug("Managed Java fallback failed", exc_info=True)
+    return None
+
+
+def _format_download_timeout_error(error: Exception) -> RuntimeError:
+    return RuntimeError(
+        "Скачивание Minecraft не успело завершиться.\n\n"
+        "Проверь интернет, VPN/прокси и попробуй снова.\n"
+        "Если версия новая, Mojang runtime может скачиваться долго.\n\n"
+        f"Техническая ошибка: {error}"
+    )
+
+
+def _is_timeout_error(error: Exception) -> bool:
+    if isinstance(error, (requests.exceptions.Timeout, requests.exceptions.ConnectTimeout, requests.exceptions.ReadTimeout)):
+        return True
+
+    text = str(error).lower()
+    return "timed out" in text or "timeout" in text or "10060" in text
+
+
+class Launcher:
+    def __init__(self, set_status=None, set_progress=None, set_max=None, on_game_closed=None):
+        self.set_status = set_status or (lambda text: None)
+        self.set_progress = set_progress or (lambda value: None)
+        self.set_max = set_max or (lambda value: None)
+        self.on_game_closed = on_game_closed
+
+    def _check_disk_space(self, minecraft_dir: Path):
+        try:
+            usage = shutil.disk_usage(minecraft_dir.anchor if minecraft_dir.is_absolute() else minecraft_dir)
+            free_mb = usage.free // (1024 * 1024)
+            if free_mb < _MIN_DISK_SPACE_MB:
+                raise RuntimeError(
+                    f"Недостаточно места на диске. Свободно: {free_mb} МБ, "
+                    f"требуется минимум: {_MIN_DISK_SPACE_MB} МБ."
+                )
+        except OSError:
+            pass
+
+    def _check_loader_compatibility(self, loader: str, minecraft_version: str, loader_version: str | None = None):
+        message = get_loader_manager().validate_loader_selection(
+            loader_id=loader,
+            minecraft_version=minecraft_version,
+            loader_version=loader_version,
+        )
+        if message:
+            raise RuntimeError(message)
+
+    def _check_writable(self, minecraft_dir: Path):
+        try:
+            test_file = minecraft_dir / ".sm_write_test"
+            test_file.write_text("ok")
+            test_file.unlink(missing_ok=True)
+        except (OSError, PermissionError) as e:
+            raise RuntimeError(
+                f"Нет прав на запись в папку сборки: {minecraft_dir}\n\n{e}"
+            )
+
+    @staticmethod
+    def _is_minecraft_installed(minecraft_dir: Path, version: str) -> bool:
+        """Быстрая локальная проверка, что версия уже установлена.
+
+        Если JSON версии, клиентский jar и индекс ассетов на месте —
+        повторно ходить в сеть за библиотеками/ассетами не нужно.
+        """
+        version_dir = minecraft_dir / "versions" / version
+        if not (version_dir / f"{version}.json").is_file():
+            return False
+        if not (version_dir / f"{version}.jar").is_file():
+            return False
+        try:
+            data = json.loads((version_dir / f"{version}.json").read_text(encoding="utf-8"))
+        except Exception:
+            return False
+        asset_index = (data.get("assetIndex") or {}).get("id")
+        if asset_index and not (minecraft_dir / "assets" / "indexes" / f"{asset_index}.json").is_file():
+            return False
+        return True
+
+    def launch_instance(self, instance: dict):
+        logger.info("Launch requested")
+        logger.info("Instance data: %s", instance)
+
+        minecraft_version = instance["minecraft_version"]
+        loader = instance.get("loader", "vanilla").lower()
+        loader_version = instance.get("loader_version") or None
+        minecraft_dir = Path(instance["minecraft_dir"])
+        ram_mb = int(instance.get("ram_mb", 4096))
+
+        minecraft_dir.mkdir(parents=True, exist_ok=True)
+
+        self._check_disk_space(minecraft_dir)
+        self._check_writable(minecraft_dir)
+        self._check_loader_compatibility(loader, minecraft_version, loader_version)
+
+        # Локальные PNG-скины в Vanilla работают только через мод CustomSkinLoader,
+        # а Vanilla не грузит моды. Для offline-аккаунтов с выбранным локальным
+        # скином прозрачно используем Fabric как «скин-лоадер», не меняя при этом
+        # саму сборку в интерфейсе.
+        from core.custom_skin_loader import prepare_custom_skin_loader
+        from core.skin_manager import SkinManager
+        from core.default_skins import ensure_default_skin
+
+        account_manager = AccountManager()
+        active_account = account_manager.get_active_account()
+        try:
+            ensure_default_skin(active_account)
+        except Exception:
+            pass
+
+        skin_manager = SkinManager()
+        provider = str((active_account or {}).get("provider") or "offline").lower()
+
+        # Ely.by-аккаунты: скачиваем реальный скин с Ely.by в локальную папку skins
+        # и назначаем его аккаунту. Без этого в Vanilla персонаж выглядит как Steve.
+        if provider == "ely":
+            active_account = skin_manager.ensure_ely_skin(active_account)
+
+        active_skin = skin_manager.get_account_skin(active_account)
+
+        skin_support_needed = (
+            loader == "vanilla"
+            and bool(active_skin)
+        )
+        effective_loader = "fabric" if skin_support_needed else loader
+
+        required_java = get_required_java_major(
+            minecraft_dir=str(minecraft_dir),
+            launch_version=minecraft_version,
+            fallback_version=minecraft_version,
+        )
+        self.set_status(f"Поиск Java {required_java}+...")
+        java_path = find_java_executable(min_major=required_java)
+        if not java_path:
+            java_path = _managed_java_fallback(required_java)
+        if not java_path:
+            from core.java_manager import build_java_required_message
+
+            raise RuntimeError(build_java_required_message(required_java))
+        actual_java = ensure_java_is_compatible(java_path, required_java)
+
+        callback = {
+            "setStatus": self.set_status,
+            "setProgress": self.set_progress,
+            "setMax": self.set_max,
+        }
+
+        try:
+            if self._is_minecraft_installed(minecraft_dir, minecraft_version):
+                self.set_status("Minecraft уже установлен, пропускаю проверку файлов...")
+                logger.info("Minecraft version already installed: %s", minecraft_version)
+            else:
+                self.set_status("Проверка и скачивание Minecraft...")
+                logger.info("Installing base Minecraft version: %s", minecraft_version)
+
+                minecraft_launcher_lib.install.install_minecraft_version(
+                    minecraft_version,
+                    str(minecraft_dir),
+                    callback=callback,
+                )
+
+        except requests.exceptions.Timeout as error:
+            logger.exception("Minecraft download timeout")
+            raise _format_download_timeout_error(error) from error
+
+        except requests.exceptions.ConnectTimeout as error:
+            logger.exception("Minecraft download timeout")
+            raise _format_download_timeout_error(error) from error
+
+        except requests.exceptions.ReadTimeout as error:
+            logger.exception("Minecraft download timeout")
+            raise _format_download_timeout_error(error) from error
+
+        except Exception as error:
+            if _is_timeout_error(error):
+                logger.exception("Minecraft download timeout")
+                raise _format_download_timeout_error(error) from error
+            logger.exception("Minecraft base installation failed")
+            raise
+
+        launch_version = minecraft_version
+
+        if effective_loader != "vanilla":
+            self.set_status(f"Установка {effective_loader}...")
+            logger.info("Installing loader: %s", effective_loader)
+
+            loader_manager = LoaderManager()
+            launch_version = loader_manager.install_loader(
+                loader_id=effective_loader,
+                minecraft_version=minecraft_version,
+                minecraft_dir=str(minecraft_dir),
+                callback=callback,
+                loader_version=loader_version,
+                java_path=java_path,
+            )
+
+            logger.info("Loader launch version: %s", launch_version)
+
+        required_java = get_required_java_major(
+            minecraft_dir=str(minecraft_dir),
+            launch_version=launch_version,
+            fallback_version=minecraft_version,
+        )
+
+        # Loader metadata can request a newer runtime than the base version.
+        if actual_java < required_java:
+            self.set_status(f"Поиск Java {required_java}+...")
+            java_path = find_java_executable(min_major=required_java)
+            if not java_path:
+                java_path = _managed_java_fallback(required_java)
+            if not java_path:
+                from core.java_manager import build_java_required_message
+
+                raise RuntimeError(build_java_required_message(required_java))
+
+        actual_java = ensure_java_is_compatible(java_path, required_java)
+
+        logger.info(
+            "Java compatible: actual=%s required=%s path=%s",
+            actual_java,
+            required_java,
+            java_path,
+        )
+
+        self.set_status("Подготовка команды запуска...")
+
+        if provider == "ely":
+            self.set_status("Проверка Ely.by токена...")
+            from auth.ely_auth import ElyAuthService
+
+            active_account = ElyAuthService().ensure_fresh_launch_token(active_account)
+        profile = account_manager.get_launch_profile()
+        username = profile.get("username", "LLPlayer")
+        uuid_str = profile.get("uuid", "")
+        token = profile.get("token", "0")
+        provider = str(profile.get("provider") or "offline").lower()
+
+        options = minecraft_launcher_lib.utils.generate_test_options()
+
+        options["username"] = username
+        options["uuid"] = uuid_str
+        options["token"] = token
+        options["launcherName"] = APP_DISPLAY_NAME
+        options["launcherVersion"] = APP_VERSION
+        options["gameDirectory"] = str(minecraft_dir)
+        options["executablePath"] = java_path
+        options["defaultExecutablePath"] = java_path
+        options["jvmArguments"] = [
+            f"-Xmx{ram_mb}M",
+            "-Xms1024M",
+        ]
+
+        if provider == "ely":
+            self.set_status("Подготовка Ely.by скинов для Minecraft...")
+            from core.ely_authlib import build_ely_javaagent_argument, ensure_authlib_injector
+
+            authlib_jar = ensure_authlib_injector()
+            options["jvmArguments"].insert(0, build_ely_javaagent_argument(authlib_jar))
+            logger.info("Ely.by authlib-injector enabled: %s", authlib_jar)
+
+        # Локальная подготовка скина через CustomSkinLoader: она нужна и для
+        # offline-аккаунтов, и для Ely.by (скин которых мы скачали в data/skins),
+        # чтобы персонаж в Vanilla не выглядел как Steve.
+        if active_skin:
+            self.set_status("Подготовка локального скина для Minecraft...")
+        try:
+            skin_result = prepare_custom_skin_loader(
+                instance=instance,
+                account=active_account,
+                skin=active_skin,
+                set_status=self.set_status,
+                loader=effective_loader,
+            )
+            logger.info("CustomSkinLoader preparation: %s", skin_result.message)
+        except Exception as error:
+            logger.exception("CustomSkinLoader preparation failed")
+            raise RuntimeError(f"Не удалось применить скин: {error}") from error
+        if active_skin and not skin_result.prepared:
+            raise RuntimeError(skin_result.message)
+
+        launcher_settings = get_launcher_settings()
+        if launcher_settings.is_minecraft_resolution_enabled():
+            width, height = launcher_settings.get_minecraft_resolution()
+            # minecraft-launcher-lib expects these values as strings.
+            options["customResolution"] = True
+            options["resolutionWidth"] = str(width)
+            options["resolutionHeight"] = str(height)
+            logger.info("Using custom Minecraft resolution: %sx%s", width, height)
+        else:
+            options["customResolution"] = False
+
+        command = minecraft_launcher_lib.command.get_minecraft_command(
+            launch_version,
+            str(minecraft_dir),
+            options,
+        )
+
+        safe_command = []
+        skip_next = False
+        for part in command:
+            if skip_next:
+                safe_command.append("***TOKEN***")
+                skip_next = False
+            elif isinstance(part, str) and part in ("--accessToken", "--token"):
+                safe_command.append(part)
+                skip_next = True
+            elif isinstance(part, str) and part.startswith("ey") and len(part) > 64:
+                safe_command.append("***TOKEN***")
+            else:
+                safe_command.append(str(part))
+
+        logger.debug("Minecraft command: %s", safe_command)
+
+        self.set_status("Запуск Minecraft...")
+        logger.info("Starting Minecraft process. launch_version=%s", launch_version)
+
+        creationflags = 0
+        if not launcher_settings.is_minecraft_console_shown():
+            creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        process = subprocess.Popen(
+            command,
+            cwd=str(minecraft_dir),
+            creationflags=creationflags,
+        )
+
+        def _watch_minecraft_process():
+            try:
+                process.wait()
+                logger.info("Minecraft process exited with code %s", process.returncode)
+            finally:
+                if self.on_game_closed:
+                    try:
+                        self.on_game_closed()
+                    except RuntimeError:
+                        logger.debug("Game close UI listener is no longer available", exc_info=True)
+
+        try:
+            threading.Thread(
+                target=_watch_minecraft_process,
+                name="MinecraftProcessWatcher",
+                daemon=True,
+            ).start()
+        except RuntimeError:
+            logger.warning("Could not start Minecraft process watcher", exc_info=True)
+
+        get_instance_manager().mark_played(instance["id"])
+
+        logger.info("Minecraft process started")
+        self.set_status("Minecraft запущен")

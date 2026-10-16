@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# Build artifacts
+build/*
+!build/*.spec
+build/pyinstaller/
+dist/
+release/
+*.spec.bak
+
+# Runtime data (data/ коммитится полностью)
+data_backup_before_*/
+storage/modrinth_cache/
+backups/
+data/tokens/
+
+# Website generated downloads
+website/*.zip
+website/*.exe
+website/downloads/*.zip
+website/downloads/*.exe
+
+# Reports / temp
+project_structure_for_cleanup.txt
+project_audit_report.txt
+*.log
+
+# Secrets / env
+.env
+*.env
+auth/oauth_config.local.py
+auth/oauth_config_local.py
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

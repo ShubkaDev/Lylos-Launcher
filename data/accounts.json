@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "active_account_id": "66ba9ffe-d531-4400-9150-e93f72460a18",
+  "accounts": [
+    {
+      "id": "66ba9ffe-d531-4400-9150-e93f72460a18",
+      "provider": "offline",
+      "username": "ShubkaDev",
+      "display_name": "ShubkaDev",
+      "uuid": "d0187630-8181-38fa-a4d8-993456960a06",
+      "access_token": "0",
+      "status": "active",
+      "created_at": 1790599764,
+      "updated_at": 1792083078,
+      "note": "Local offline Nexus profile",
+      "skin_id": "6ec63c34-d00e-4d82-8b80-2b46638b2ca2",
+      "skin_path": "C:\\Users\\User\\Videos\\Nexus_mincraft_laucher-main\\data\\skins\\6ec63c34-d00e-4d82-8b80-2b46638b2ca2.png",
+      "skin_name": "Ely.by Shubka_youtube",
+      "skin_model": "classic"
+    }
+  ]
+}

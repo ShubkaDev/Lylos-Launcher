@@ -1,0 +1,17 @@
+{
+  "ram_mb": 6144,
+  "ram_override_enabled": true,
+  "sync_ram_to_instances": true,
+  "theme": "forest",
+  "language": "ru",
+  "sidebar_collapsed": true,
+  "mods_filters_collapsed": false,
+  "library_header_collapsed": false,
+  "downloads_header_collapsed": false,
+  "minecraft_resolution_enabled": false,
+  "minecraft_resolution_width": 1280,
+  "minecraft_resolution_height": 720,
+  "discord_presence_enabled": true,
+  "discord_client_id": "1553410427042398291",
+  "ui_layout_version": 2
+}
