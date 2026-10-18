@@ -613,7 +613,7 @@ class LoaderManager:
             f"Не удалось установить {loader_label} для Minecraft {minecraft_version}.\n\n"
             f"Папка сборки:\n{minecraft_path}\n\n"
             f"Что можно попробовать:\n"
-            f"1. Перезапустить SMLauncher.\n"
+            f"1. Перезапустить Lylos Launcher.\n"
             f"2. Создать новую сборку.\n"
             f"3. Выбрать Minecraft 1.20.1 + Fabric.\n"
             f"4. Проверить интернет.\n\n"

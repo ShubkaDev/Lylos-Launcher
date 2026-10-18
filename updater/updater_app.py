@@ -1,7 +1,7 @@
-"""SMLauncher Updater — визуальная часть (логика подключается позже).
+"""Lylos Launcher Updater — визуальная часть (логика подключается позже).
 
 Отдельное приложение, которое в будущем будет скачивать и устанавливать
-новые версии SMLauncher. Сейчас — только интерфейс: красивое окно с
+новые версии Lylos Launcher. Сейчас — только интерфейс: красивое окно с
 логотипом, статусом, прогресс-баром и кнопками.
 
 Сборка в EXE:  pyinstaller --noconfirm build\\LylosUpdater.spec
@@ -163,7 +163,7 @@ class UpdateWorker(QThread):
     update_succeeded = Signal(str)
     update_failed = Signal(str)
 
-    release_json_url = "https://shubkadev.github.io/SMLauncher/release.json"
+    release_json_url = "https://shubkadev.github.io/Lylos-Launcher/release.json"
 
     def __init__(self, install_dir: Path, wait_pid: int | None = None):
         super().__init__()
@@ -219,7 +219,7 @@ class UpdateWorker(QThread):
     def _fetch_release(self) -> dict[str, str]:
         request = urllib.request.Request(
             self.release_json_url,
-            headers={"User-Agent": "SMLauncher-Updater/1.0"},
+            headers={"User-Agent": "LylosLauncher-Updater/1.0"},
         )
         with urllib.request.urlopen(request, timeout=20) as response:
             raw_data = response.read(65537)
@@ -237,7 +237,7 @@ class UpdateWorker(QThread):
 
     def _download_archive(self, download_url: str, archive_path: Path):
         self.status_changed.emit("Скачивание обновления...", "Загружаем ZIP-архив.")
-        request = urllib.request.Request(download_url, headers={"User-Agent": "SMLauncher-Updater/1.0"})
+        request = urllib.request.Request(download_url, headers={"User-Agent": "LylosLauncher-Updater/1.0"})
         with urllib.request.urlopen(request, timeout=60) as response, archive_path.open("wb") as archive:
             total = int(response.headers.get("Content-Length", "0") or 0)
             received = 0
@@ -314,7 +314,7 @@ class UpdateWorker(QThread):
 
 
 class UpdaterWindow(QMainWindow):
-    """Окно обновления SMLauncher."""
+    """Окно обновления Lylos Launcher."""
 
     def __init__(self, install_dir: Path, wait_pid: int | None = None):
         super().__init__()

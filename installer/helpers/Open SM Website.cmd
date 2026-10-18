@@ -1,2 +1,2 @@
 @echo off
-start "" "https://shubkadev.github.io/SMLauncher/"
+start "" "https://shubkadev.github.io/Lylos-Launcher/"

@@ -37,8 +37,8 @@ class ProjectIntegrityTests(unittest.TestCase):
         self.assertIn(f'const fallbackVersion = window.SM_VERSION || "{APP_VERSION}";', script)
         self.assertIn(f'const repo = window.SM_REPO || "{REPO}";', script)
 
-        expected_installer = f"SMLauncherSetup-{APP_VERSION}-win-x64.exe"
-        expected_portable = f"SMLauncher-{APP_VERSION}-win-x64-portable.zip"
+        expected_installer = f"LylosSetup-{APP_VERSION}-win-x64.exe"
+        expected_portable = f"LylosLauncher-{APP_VERSION}-win-x64-portable.zip"
         self.assertIn(expected_portable, release["download_url"])
         self.assertIn(expected_portable, json.dumps(downloads_release, ensure_ascii=False))
         self.assertIn(expected_installer, json.dumps(downloads_release, ensure_ascii=False))

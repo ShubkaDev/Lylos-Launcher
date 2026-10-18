@@ -9,7 +9,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # Страница-заглушка, на которую Ely.by перенаправляет после успешного обмена кода.
 # Тот же адрес использует Legacy Launcher (appName=Legacy%20Launcher).
-SUCCESS_PAGE_URL = "https://account.ely.by/oauth2/code/success?appName=SMLauncher"
+SUCCESS_PAGE_URL = "https://account.ely.by/oauth2/code/success?appName=LylosLauncher"
 
 # Диагностический лог OAuth (сырой callback + параметры обмена) — временный.
 OAUTH_DEBUG_LOG = os.path.join(tempfile.gettempdir(), "sm_oauth_debug.log")

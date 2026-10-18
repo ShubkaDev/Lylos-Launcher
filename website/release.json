@@ -1,4 +1,5 @@
 {
   "version": "1.0",
-  "download_url": "https://github.com/ShubkaDev/SMLauncher/releases/latest/download/SMLauncher-1.0-win-x64-portable.zip"
+  "installer": "https://github.com/ShubkaDev/Lylos-Launcher/releases/latest/download/LylosSetup-1.0-win-x64.exe",
+  "direct_download": "https://github.com/ShubkaDev/Lylos-Launcher/releases/latest/download/LylosSetup-1.0-win-x64.exe"
 }

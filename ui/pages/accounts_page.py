@@ -1142,7 +1142,7 @@ class AccountsPage(QWidget):
         result = QMessageBox.question(
             self,
             "Удалить аккаунт?",
-            "Удалить выбранный профиль из SMLauncher?",
+            "Удалить выбранный профиль из Lylos Launcher?",
         )
 
         if result != QMessageBox.Yes:

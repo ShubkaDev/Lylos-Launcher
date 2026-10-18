@@ -415,7 +415,7 @@ class AddAccountDialog(QDialog):
         self.created_account: dict | None = None
         self.auth_worker: AuthLoginWorker | None = None
 
-        self.setWindowTitle("Добро пожаловать в SMLauncher" if self.onboarding else "Добавить аккаунт")
+        self.setWindowTitle("Добро пожаловать в Lylos Launcher" if self.onboarding else "Добавить аккаунт")
         self.setModal(True)
         self.setMinimumWidth(560)
 

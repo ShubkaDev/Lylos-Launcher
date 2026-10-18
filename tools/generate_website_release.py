@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import re
+from datetime import datetime
 from pathlib import Path
 
 
@@ -31,7 +32,7 @@ def normalize_repo(value: str | None) -> str:
     if "/" in value:
         return value
     owner = os.environ.get("GITHUB_REPOSITORY_OWNER") or "ShubkaDev"
-    repo = os.environ.get("GITHUB_REPOSITORY", "").split("/")[-1] or "SMLauncher"
+    repo = os.environ.get("GITHUB_REPOSITORY", "").split("/")[-1] or "Lylos-Launcher"
     return f"{owner}/{repo}"
 
 
@@ -53,13 +54,13 @@ def patch_index(version: str, repo: str):
     text = re.sub(r'(id="footerVersion">)[^<]+', rf"\g<1>{display_version}", text)
 
     text = re.sub(
-        r'SMLauncherSetup-\d+\.\d+\.\d+(?:\.\d+)?-win-x64\.exe',
-        f"SMLauncherSetup-{version}-win-x64.exe",
+        r'LylosSetup-\d+\.\d+\.\d+(?:\.\d+)?-win-x64\.exe',
+        f"LylosSetup-{version}-win-x64.exe",
         text,
     )
     text = re.sub(
-        r'SMLauncher-\d+\.\d+\.\d+(?:\.\d+)?-win-x64-portable\.zip',
-        f"SMLauncher-{version}-win-x64-portable.zip",
+        r'LylosLauncher-\d+\.\d+\.\d+(?:\.\d+)?-win-x64-portable\.zip',
+        f"LylosLauncher-{version}-win-x64-portable.zip",
         text,
     )
     text = re.sub(r'window\.SM_VERSION\s*=\s*"[^"]+";', f'window.SM_VERSION = "{version}";', text)
@@ -144,8 +145,8 @@ def main() -> int:
     repo = normalize_repo(args.repo)
     base = f"https://github.com/{repo}/releases/latest/download"
 
-    installer = f"SMLauncherSetup-{version}-win-x64.exe"
-    portable = f"SMLauncher-{version}-win-x64-portable.zip"
+    installer = f"LylosSetup-{version}-win-x64.exe"
+    portable = f"LylosLauncher-{version}-win-x64-portable.zip"
 
     data = {
         "repo": repo,
@@ -166,7 +167,17 @@ def main() -> int:
 
     write_json(
         WEBSITE_DIR / "release.json",
-        {"version": version, "download_url": data["portable_download"]},
+        {
+            "version": version,
+            "installer": data["direct_download"],
+            "portable": data["portable_download"],
+            "direct_download": data["direct_download"],
+            "portable_download": data["portable_download"],
+            "download_url": data["direct_download"],
+            "repo": repo,
+            "latest_release_page": data["latest_release_page"],
+            "updated_at": datetime.utcnow().isoformat() + "Z",
+        },
     )
     write_json(
         WEBSITE_DIR / "downloads" / "release.json",

@@ -1486,7 +1486,7 @@ QProgressBar::chunk,
 
 
 LAUNCHER_SITE_MATCH_STYLE = r"""
-/* SMLauncher — site-matched Minecraft dark skin
+/* Lylos Launcher — site-matched Minecraft dark skin
    Goal: make desktop launcher closer to website: calm dark panels, moss/stone green,
    less bright neon, more app-like cards. */
 
@@ -2335,7 +2335,7 @@ THEME_TOKEN_OVERRIDES = {
 }
 
 SM_2_STYLE = r"""
-/* SMLauncher 2.0 shell and shared desktop foundations */
+/* Lylos Launcher 2.0 shell and shared desktop foundations */
 QMainWindow, #AppContent, #HomeContent { background-color: @background@; }
 #Sidebar { background-color: #141228; border-right: 1px solid @subtle_border@; }
 #SidebarLogoCard, #SidebarProfileCard {

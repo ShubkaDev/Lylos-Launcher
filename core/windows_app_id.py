@@ -6,7 +6,7 @@ import sys
 
 logger = logging.getLogger(__name__)
 
-APP_USER_MODEL_ID = "SMLauncher.Launcher.1.2"
+APP_USER_MODEL_ID = "LylosLauncher.Launcher.1.2"
 
 
 def set_windows_app_id(app_id: str = APP_USER_MODEL_ID) -> bool:

@@ -1,4 +1,4 @@
-const repo = window.SM_REPO || "ShubkaDev/SMLauncher";
+const repo = window.SM_REPO || "ShubkaDev/Lylos-Launcher";
 const fallbackVersion = window.SM_VERSION || "1.0";
 
 const menuBtn = document.getElementById("menuBtn");
@@ -38,8 +38,8 @@ function cleanVersion(version) {
 function fileNames(version) {
   const clean = cleanVersion(version);
   return {
-    setup: `SMLauncherSetup-${clean}-win-x64.exe`,
-    portable: `SMLauncher-${clean}-win-x64-portable.zip`,
+    setup: `LylosSetup-${clean}-win-x64.exe`,
+    portable: `LylosLauncher-${clean}-win-x64-portable.zip`,
   };
 }
 

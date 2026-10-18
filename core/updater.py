@@ -132,7 +132,7 @@ def fetch_github_latest_release(timeout: int = 10) -> Optional[ReleaseInfo]:
             return ReleaseInfo(
                 version=version,
                 tag=tag or f"v{version}",
-                name=data.get("name") or tag or f"SMLauncher {version}",
+                name=data.get("name") or tag or f"Lylos Launcher {version}",
                 body=data.get("body") or "",
                 page_url=data.get("html_url") or GITHUB_LATEST_RELEASE_PAGE,
                 published_at=data.get("published_at"),
@@ -161,25 +161,53 @@ def fetch_website_release(timeout: int = 10) -> Optional[ReleaseInfo]:
         data = _request_json(WEBSITE_RELEASE_JSON_URL, timeout=timeout)
 
         version = str(data.get("version") or "").removeprefix("v")
-        download_url = str(data.get("download_url") or "").strip()
-        if not version or not download_url.startswith("https://"):
-            return None
-        if not download_url.lower().split("?", 1)[0].endswith(".zip"):
+        if not version:
             return None
 
-        assets = [
-            ReleaseAsset(
-                name=f"SMLauncher-{version}-win-x64-portable.zip",
-                download_url=download_url,
-                content_type="application/zip",
+        # Ссылка на файл обновления из того же release.json. Поддерживаем и
+        # installer .exe, и portable .zip — предпочитаем installer, чтобы
+        # можно было обновиться автоматически.
+        installer_url = str(
+            data.get("installer")
+            or data.get("direct_download")
+            or data.get("download_url")
+            or ""
+        ).strip()
+        portable_url = str(data.get("portable") or data.get("portable_download") or "").strip()
+
+        if not installer_url.startswith("https://") and not portable_url.startswith("https://"):
+            return None
+
+        def _is_valid(url: str) -> bool:
+            url = url.lower().split("?", 1)[0]
+            return url.startswith("https://") and (url.endswith(".zip") or url.endswith(".exe"))
+
+        assets: list[ReleaseAsset] = []
+        if _is_valid(installer_url):
+            assets.append(
+                ReleaseAsset(
+                    name=f"Lylos-Launcher-{version}-win-x64-setup.exe",
+                    download_url=installer_url,
+                    content_type="application/x-msdownload",
+                )
             )
-        ]
-        preferred_asset = assets[0]
+        if _is_valid(portable_url) and portable_url.lower().split("?", 1)[0].endswith(".zip"):
+            assets.append(
+                ReleaseAsset(
+                    name=f"Lylos-Launcher-{version}-win-x64-portable.zip",
+                    download_url=portable_url,
+                    content_type="application/zip",
+                )
+            )
+        if not assets:
+            return None
+
+        preferred_asset = choose_preferred_asset(assets)
 
         return ReleaseInfo(
             version=version,
             tag=f"v{version}",
-            name=f"SMLauncher {version}",
+            name=str(data.get("name") or f"Lylos Launcher {version}"),
             body=str(data.get("note") or ""),
             page_url=str(data.get("latest_release_page") or GITHUB_LATEST_RELEASE_PAGE),
             published_at=str(data.get("updated_at") or "") or None,
@@ -399,7 +427,7 @@ def create_update_notes(release: ReleaseInfo, downloaded_path: Path) -> Path:
 
     notes = UPDATES_DIR / "latest_update.txt"
     notes.write_text(
-        f"SMLauncher update downloaded\n\n"
+        f"Lylos Launcher update downloaded\n\n"
         f"Source: {release.source}\n"
         f"Repo: {release.repo}\n"
         f"Current version: {APP_VERSION}\n"
@@ -449,8 +477,8 @@ def create_update_launcher_script(
 
         script.write_text(
             "@echo off\r\n"
-            "title SMLauncher Update\r\n"
-            "echo Waiting for SMLauncher to close...\r\n"
+            "title Lylos Launcher Update\r\n"
+            "echo Waiting for Lylos Launcher to close...\r\n"
             f"set SM_PARENT_PID={parent_pid}\r\n"
             "for /l %%i in (1,1,60) do (\r\n"
             "  tasklist /FI \"PID eq %SM_PARENT_PID%\" 2>nul | find \"%SM_PARENT_PID%\" >nul\r\n"

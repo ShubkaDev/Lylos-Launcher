@@ -6,7 +6,7 @@
 
 Дизайн:
   - видео-фон на всё окно (QGraphicsView + QGraphicsVideoItem);
-  - снизу красивый затемнённый прямоугольник с логотипом SMLauncher
+  - снизу красивый затемнённый прямоугольник с логотипом Lylos Launcher
     и тремя кнопками: «Звук», «Создать Offline аккаунт», «Создать Ely.by аккаунт»;
   - при нажатии на «Создать Offline аккаунт» прямоугольник плавно
     выезжает поверх видео и показывает форму ввода ника;
@@ -186,7 +186,7 @@ class AccountSetupWindow(QWidget):
         self.setObjectName("AccountSetupWindow")
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setStyleSheet("#AccountSetupWindow { background-color: #02040C; }")
-        self.setWindowTitle("SMLauncher — создание аккаунта")
+        self.setWindowTitle("Lylos Launcher — создание аккаунта")
         self.setMinimumSize(980, 640)
         self.resize(1180, 720)
 
@@ -223,7 +223,7 @@ class AccountSetupWindow(QWidget):
             root.addWidget(self.video_view, 1)
         else:
             # Запасной тёмный фон, если QtMultimedia недоступен.
-            fallback = QLabel("SMLauncher", self)
+            fallback = QLabel("Lylos Launcher", self)
             fallback.setObjectName("SetupVideoBackground")
             fallback.setAlignment(Qt.AlignCenter)
             fallback.setStyleSheet(
@@ -252,8 +252,8 @@ class AccountSetupWindow(QWidget):
         layout.setContentsMargins(30, 16, 30, 18)
         layout.setSpacing(10)
 
-        # --- логотип SMLauncher ---
-        self.panel_title = QLabel("SMLauncher")
+        # --- логотип Lylos Launcher ---
+        self.panel_title = QLabel("Lylos Launcher")
         self.panel_title.setObjectName("SetupPanelTitle")
         self.panel_title.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.panel_title)

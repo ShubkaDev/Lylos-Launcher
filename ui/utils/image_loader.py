@@ -12,7 +12,7 @@ except Exception:
 try:
     from core.app_info import USER_AGENT
 except Exception:
-    USER_AGENT='SMLauncher/0.6.0'
+    USER_AGENT='LylosLauncher/0.6.0'
 logger=logging.getLogger(__name__)
 IMAGE_CACHE_DIR=Path(STORAGE_DIR)/'image_cache'
 _MAX_CACHE_FILES=1000

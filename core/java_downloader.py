@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 ADOPTIUM_BINARY_API = (
     "https://api.adoptium.net/v3/binary/latest/{major}/ga/windows/x64/jre/hotspot/normal/eclipse"
 )
-USER_AGENT = "SMLauncher/1.0"
+USER_AGENT = "LylosLauncher/1.0"
 TIMEOUT = 60
 
 

@@ -10,9 +10,9 @@
 
 **Управляй сборками, модами, мирами и аккаунтами — всё в одном красивом окне.**
 
-[🚀 Скачать](https://github.com/ShubkaDev/SMLauncher/releases/latest) •
-[🌐 Сайт](https://ShubkaDev.github.io/SMLauncher/) •
-[🐛 Сообщить о баге](https://github.com/ShubkaDev/SMLauncher/issues/new)
+[🚀 Скачать](https://github.com/ShubkaDev/Lylos-Launcher/releases/latest) •
+[🌐 Сайт](https://shubkadev.github.io/Lylos-Launcher/) •
+[🐛 Сообщить о баге](https://github.com/ShubkaDev/Lylos-Launcher/issues/new)
 
 ![Python](https://img.shields.io/badge/Python-3.12+-3572A5?style=flat&logo=python&logoColor=white)
 ![PySide6](https://img.shields.io/badge/UI-PySide6%20%2F%20Qt6-41B883?style=flat)
@@ -67,7 +67,7 @@
 
 ### Готовый бинарник
 
-1. Скачай последний релиз: [releases/latest](https://github.com/ShubkaDev/SMLauncher/releases/latest)
+1. Скачай последний релиз: [releases/latest](https://github.com/ShubkaDev/Lylos-Launcher/releases/latest)
 2. Запусти `LylosLauncher.exe` (или установи через `LylosSetup.exe`)
 3. Создай аккаунт — Offline или через Ely.by
 4. Создай сборку и жми **Играть** 🚀
@@ -76,8 +76,8 @@
 
 ```powershell
 # 1. Клонируй
-git clone https://github.com/ShubkaDev/SMLauncher.git
-cd SMLauncher
+git clone https://github.com/ShubkaDev/Lylos-Launcher.git
+cd Lylos-Launcher
 
 # 2. Виртуальное окружение
 python -m venv .venv
@@ -91,7 +91,7 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-> 💡 При запуске из Python данные хранятся в `data/`, `instances/`, `logs/` внутри проекта. Собранный `.exe` использует `%APPDATA%\SMLauncher`.
+> 💡 При запуске из Python данные хранятся в `data/`, `instances/`, `logs/` внутри проекта. Собранный `.exe` использует `%APPDATA%\Lylos Launcher`.
 
 ---
 
@@ -100,7 +100,7 @@ python main.py
 ### Структура проекта
 
 ```text
-SMLauncher/
+Lylos-Launcher/
 ├─ app/                 # Главное окно, маршрутизация страниц
 ├─ auth/                # Аккаунты: Offline, Ely.by OAuth
 ├─ core/                # Запуск Minecraft, Java, updater, настройки
@@ -175,7 +175,7 @@ build_all.bat
 <details>
 <summary><b>Сборки не видны в .exe?</b></summary>
 
-Python-запуск и `.exe` используют разные хранилища данных. Проверь `%APPDATA%\SMLauncher\data\instances.json`.
+Python-запуск и `.exe` используют разные хранилища данных. Проверь `%APPDATA%\Lylos Launcher\data\instances.json`.
 </details>
 
 <details>
@@ -202,7 +202,7 @@ Python-запуск и `.exe` используют разные хранилищ
 
 Проект полностью открыт — форкай, правь, предлагай!
 
-1. [Fork](https://github.com/ShubkaDev/SMLauncher/fork) репозитория
+1. [Fork](https://github.com/ShubkaDev/Lylos-Launcher/fork) репозитория
 2. Создай ветку `feature/имя-фичи`
 3. Внеси изменения и открой **Pull Request**
 

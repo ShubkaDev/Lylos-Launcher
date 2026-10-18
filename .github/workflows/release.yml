@@ -52,7 +52,7 @@ jobs:
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: SMLauncher-Windows
+          name: Lylos-Launcher-Windows
           path: |
             release/*.exe
             release/*.zip

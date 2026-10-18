@@ -86,7 +86,7 @@ class Skin3DPreviewWidget(QWidget):
     def __init__(self, width: int = 210, height: int = 250, parent=None):
         super().__init__(parent)
         self._skin_path: str | None = None
-        self._label = "SMLauncher"
+        self._label = "Lylos Launcher"
         self._yaw = -28.0
         self._pitch = -8.0
         self._zoom = 1.0
@@ -96,9 +96,9 @@ class Skin3DPreviewWidget(QWidget):
         self.setToolTip("Перетащи мышью, чтобы повернуть. Колесо — масштаб. Двойной клик — сброс.")
         self.setMinimumSize(width, height)
 
-    def set_skin(self, skin_path: str | None, label: str = "SMLauncher") -> None:
+    def set_skin(self, skin_path: str | None, label: str = "Lylos Launcher") -> None:
         self._skin_path = skin_path
-        self._label = label or "SMLauncher"
+        self._label = label or "Lylos Launcher"
         self.update()
 
     def mousePressEvent(self, event):
