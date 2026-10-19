@@ -218,22 +218,9 @@ def main():
             splash.play_loading(3000, _open_main_window)
 
         def _ask_update(release):
-            from PySide6.QtWidgets import QMessageBox
-            from core.app_info import APP_VERSION
+            from ui.components.update_dialog import UpdateDialog
 
-            box = QMessageBox(splash)
-            box.setIcon(QMessageBox.Icon.Information)
-            box.setWindowTitle("Доступно обновление")
-            box.setText(f"Ваша версия {APP_VERSION} устарела. Обновить до {release.version}?")
-            box.setInformativeText(
-                "LylosUpdater.exe скачает архив обновления и заменит файлы лаунчера."
-            )
-            yes_button = box.addButton("Да", QMessageBox.ButtonRole.AcceptRole)
-            no_button = box.addButton("Позже", QMessageBox.ButtonRole.RejectRole)
-            box.setDefaultButton(yes_button)
-            box.exec()
-
-            if box.clickedButton() is not yes_button:
+            if not UpdateDialog.ask(release, splash):
                 _loading_then_open()
                 return
 

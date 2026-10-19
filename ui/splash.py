@@ -287,7 +287,7 @@ class SplashScreen(QWidget):
 
 
 class UpdateCheckWorker(QThread):
-    """Fetch the website realese.json and report whether a newer version exists."""
+    """Fetch the website release.json and report whether a newer version exists."""
 
     result_ready = Signal(object)
 

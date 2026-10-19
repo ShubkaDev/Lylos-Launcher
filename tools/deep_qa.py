@@ -112,8 +112,6 @@ def check_app_info():
 
 def check_website_json():
     for rel in [
-        "realese.json",
-        "website/realese.json",
         "website/release.json",
         "website/downloads/release.json",
     ]:

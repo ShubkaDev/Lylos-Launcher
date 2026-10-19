@@ -1,5 +1,6 @@
 {
+  "name": "Lylos Launcher 1.0",
   "version": "1.0",
-  "installer": "https://github.com/ShubkaDev/Lylos-Launcher/releases/latest/download/LylosSetup-1.0-win-x64.exe",
-  "direct_download": "https://github.com/ShubkaDev/Lylos-Launcher/releases/latest/download/LylosSetup-1.0-win-x64.exe"
+  "description": "Новая версия Lylos Launcher уже доступна!\n\n• Улучшена работа со скинами Ely.by\n• Новое окно обновления\n• Исправления и стабильность\n\nОбновитесь, чтобы получить все улучшения.",
+  "download_url": "https://github.com/ShubkaDev/Lylos-Launcher/releases/latest/download/LylosLauncher-1.0-win-x64-portable.zip"
 }

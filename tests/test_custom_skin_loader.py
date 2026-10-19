@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from core.custom_skin_loader import prepare_custom_skin_loader
@@ -65,7 +66,14 @@ class CustomSkinLoaderTests(unittest.TestCase):
             self.assertIn("Vanilla", result.message)
             self.assertFalse((root / ".minecraft").exists())
 
-    def test_launcher_does_not_start_vanilla_with_unapplied_skin(self):
+    def test_launcher_switches_vanilla_to_fabric_for_local_skin(self):
+        """Vanilla + выбранный скин → лаунчер сам поднимает Fabric со скином.
+
+        Раньше тест ожидал отказ с ошибкой «Vanilla», но лаунчер теперь
+        прозрачно включает Fabric как загрузчик скина, чтобы персонаж не был
+        Steve. Проверяем именно это поведение: ставится loader fabric,
+        готовится CustomSkinLoader и игра запускается.
+        """
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             source = root / "chosen.png"
@@ -74,25 +82,44 @@ class CustomSkinLoaderTests(unittest.TestCase):
                 "id": "test", "loader": "vanilla", "minecraft_version": "1.20.1",
                 "minecraft_dir": str(root / ".minecraft"),
             }
+            prepared = SimpleNamespace(prepared=True, message="ok", mod_path=None, skin_path=source)
+
             with patch.object(Launcher, "_check_disk_space"), patch.object(
                 Launcher, "_check_writable",
             ), patch.object(Launcher, "_check_loader_compatibility"), patch(
                 "core.launcher.minecraft_launcher_lib.install.install_minecraft_version",
+            ), patch(
+                "core.launcher.minecraft_launcher_lib.command.get_minecraft_command",
+                return_value=["java", "-jar", "client.jar"],
             ), patch("core.launcher.get_required_java_major", return_value=17), patch(
                 "core.launcher.find_java_executable", return_value="java",
             ), patch("core.launcher.ensure_java_is_compatible", return_value=17), patch(
                 "core.launcher.AccountManager",
             ) as manager, patch("core.skin_manager.SkinManager") as skins, patch(
+                "core.launcher.LoaderManager",
+            ) as loader_cls, patch(
+                "core.custom_skin_loader.prepare_custom_skin_loader", return_value=prepared,
+            ) as prepare, patch("core.launcher.get_instance_manager"), patch(
                 "core.launcher.subprocess.Popen",
             ) as popen:
-                manager.return_value.get_active_account.return_value = {"username": "Player_1"}
+                manager.return_value.get_active_account.return_value = {
+                    "id": "1", "username": "Player_1", "provider": "offline",
+                }
                 manager.return_value.get_launch_profile.return_value = {
                     "username": "Player_1", "uuid": "1234", "token": "0", "provider": "offline",
                 }
                 skins.return_value.get_account_skin.return_value = {"path": str(source)}
-                with self.assertRaisesRegex(RuntimeError, "Vanilla"):
-                    Launcher().launch_instance(instance)
-                popen.assert_not_called()
+                skins.return_value.ensure_ely_skin.return_value = None
+                loader_cls.return_value.install_loader.return_value = "fabric-loader-0.15.11-1.20.1"
+
+                Launcher().launch_instance(instance)
+
+                self.assertEqual(
+                    loader_cls.return_value.install_loader.call_args.kwargs.get("loader_id"),
+                    "fabric",
+                )
+                prepare.assert_called_once()
+                popen.assert_called_once()
 
 
 if __name__ == "__main__":

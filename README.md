@@ -33,7 +33,7 @@
 - добавлять **миры и моды** из ZIP/JAR-архивов в пару кликов;
 - управлять **аккаунтами** — Offline и Ely.by (со скинами!);
 - автоматически **скачивать Java** и настраивать RAM;
-- обновляться **сам** через `realese.json` на сайте проекта (fallback — GitHub Releases).
+- обновляться **сам** через `release.json` на сайте проекта (fallback — GitHub Releases).
 
 > 🎨 Красивый тёмный интерфейс, видео-фон при первом запуске и встроенные скины Steve / Alex — из коробки.
 
@@ -49,7 +49,7 @@
 | 👤 **Аккаунты** | Offline-профили и Ely.by OAuth, локальные скины Steve/Alex, CustomSkinLoader |
 | ☕ **Java** | Автоскачивание Temurin JRE под нужную версию Minecraft |
 | ⚙️ **Настройки** | RAM, разрешение окна, папки данных, 6 тем оформления |
-| 🔄 **Обновления** | Проверка `realese.json` на сайте проекта + fallback GitHub Releases |
+| 🔄 **Обновления** | Проверка `release.json` на сайте проекта + fallback GitHub Releases |
 
 ---
 
@@ -118,7 +118,6 @@ Lylos-Launcher/
 ├─ tools/               # Диагностика, QA, генерация metadata
 ├─ tests/               # unittest-проверки
 ├─ website/             # Продакшен-сайт GitHub Pages
-├─ realese.json         # Версия и ссылки для автообновления (публикуется на Pages)
 ├─ main.py              # Точка входа GUI
 └─ requirements.txt     # Python-зависимости
 ```

@@ -58,7 +58,7 @@ class Sidebar(QWidget):
         logo.setSpacing(5)
         self.logo_mark = QLabel()
         self.logo_mark.setFixedSize(42, 42)
-        self.logo_mark.setPixmap(icon("sm").pixmap(QSize(40, 40)))
+        self.logo_mark.setPixmap(icon("LL").pixmap(QSize(40, 40)))
         logo.addWidget(self.logo_mark)
         names = QVBoxLayout()
         names.setSpacing(0)
@@ -148,4 +148,4 @@ class Sidebar(QWidget):
     def refresh_theme(self, theme=None):
         for button in self.buttons:
             button.setIcon(icon(button.icon_name))
-        self.logo_mark.setPixmap(icon("sm").pixmap(QSize(40, 40)))
+        self.logo_mark.setPixmap(icon("LL").pixmap(QSize(40, 40)))

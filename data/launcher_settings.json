@@ -4,14 +4,15 @@
   "sync_ram_to_instances": true,
   "theme": "forest",
   "language": "ru",
-  "sidebar_collapsed": true,
+  "sidebar_collapsed": false,
   "mods_filters_collapsed": false,
   "library_header_collapsed": false,
   "downloads_header_collapsed": false,
   "minecraft_resolution_enabled": false,
   "minecraft_resolution_width": 1280,
   "minecraft_resolution_height": 720,
+  "show_minecraft_console": false,
+  "ui_layout_version": 2,
   "discord_presence_enabled": true,
-  "discord_client_id": "1553410427042398291",
-  "ui_layout_version": 2
+  "discord_client_id": "1553410427042398291"
 }

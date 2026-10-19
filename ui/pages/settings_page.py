@@ -549,7 +549,7 @@ class SettingsPage(QWidget):
         title.setObjectName("PanelTitle")
 
         self.update_status_label = QLabel(
-            "LL сам проверяет сайт проекта (realese.json) и GitHub Releases. "
+            "LL сам проверяет сайт проекта (release.json) и GitHub Releases. "
             "Если доступна новая Setup-версия, можно скачать её и запустить обновление по твоему подтверждению."
         )
         self.update_status_label.setObjectName("PanelText")
@@ -609,7 +609,7 @@ class SettingsPage(QWidget):
         if self.update_check_worker and self.update_check_worker.isRunning():
             return
 
-        self.update_status_label.setText("Проверяю сайт проекта (realese.json). Если сайт недоступен — использую GitHub Releases...")
+        self.update_status_label.setText("Проверяю сайт проекта (release.json). Если сайт недоступен — использую GitHub Releases...")
         self.update_progress.setValue(0)
         self.download_update_btn.setEnabled(False)
         self.install_update_btn.setEnabled(False)
@@ -624,7 +624,7 @@ class SettingsPage(QWidget):
 
         if not release:
             self.update_status_label.setText(
-                "Обновления не найдены: realese.json или GitHub Release пока недоступны. "
+                "Обновления не найдены: release.json или GitHub Release пока недоступны. "
                 "Проверь, опубликован ли релиз и включён ли сайт."
             )
             self.download_update_btn.setEnabled(False)
@@ -632,7 +632,7 @@ class SettingsPage(QWidget):
             return
 
         asset_name = release.preferred_asset.name if release.preferred_asset else "asset не найден"
-        source = "сайт realese.json" if getattr(release, "source", "website") == "website" else "GitHub Releases"
+        source = "сайт release.json" if getattr(release, "source", "website") == "website" else "GitHub Releases"
 
         if release.is_newer:
             self.update_status_label.setText(

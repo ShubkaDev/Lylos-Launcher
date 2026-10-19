@@ -208,7 +208,7 @@ def fetch_website_release(timeout: int = 10) -> Optional[ReleaseInfo]:
             version=version,
             tag=f"v{version}",
             name=str(data.get("name") or f"Lylos Launcher {version}"),
-            body=str(data.get("note") or ""),
+            body=str(data.get("description") or data.get("note") or ""),
             page_url=str(data.get("latest_release_page") or GITHUB_LATEST_RELEASE_PAGE),
             published_at=str(data.get("updated_at") or "") or None,
             assets=assets,
@@ -227,7 +227,7 @@ def fetch_website_release(timeout: int = 10) -> Optional[ReleaseInfo]:
 def fetch_latest_release(timeout: int = 10) -> Optional[ReleaseInfo]:
     """Check update metadata.
 
-    The website ``realese.json`` is the source of truth for update checks:
+    The website ``release.json`` is the source of truth for update checks:
     it is published on GitHub Pages and contains the current version plus
     direct links to the updated files. GitHub Releases API is only a
     fallback when the website is unavailable.

@@ -654,7 +654,7 @@ class InstancesPage(QWidget):
         icon_box.setObjectName("BlockIcon")
         icon_box.setFixedSize(58, 58)
         icon_box.setAlignment(Qt.AlignCenter)
-        icon_obj = qicon("sm")
+        icon_obj = qicon("LL")
         if icon_obj:
             icon_box.setPixmap(icon_obj.pixmap(QSize(36, 36)))
 

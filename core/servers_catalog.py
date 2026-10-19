@@ -37,12 +37,12 @@ def _bundled_path() -> Path:
 
 
 def _remote_servers_url() -> str:
-    """URL удалённого списка серверов (по умолчанию рядом с realese.json)."""
+    """URL удалённого списка серверов (по умолчанию рядом с release.json)."""
     configured = os.environ.get("SM_WEBSITE_SERVERS_URL", "").strip()
     if configured:
         return configured
     base = (WEBSITE_RELEASE_JSON_URL or "").strip()
-    for suffix in ("realese.json", "release.json"):
+    for suffix in ("release.json",):
         if base.endswith(suffix):
             return base[: -len(suffix)] + "servers.json"
     return base

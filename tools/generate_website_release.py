@@ -4,7 +4,6 @@ import argparse
 import json
 import os
 import re
-from datetime import datetime
 from pathlib import Path
 
 
@@ -166,20 +165,6 @@ def main() -> int:
     }
 
     write_json(
-        WEBSITE_DIR / "release.json",
-        {
-            "version": version,
-            "installer": data["direct_download"],
-            "portable": data["portable_download"],
-            "direct_download": data["direct_download"],
-            "portable_download": data["portable_download"],
-            "download_url": data["direct_download"],
-            "repo": repo,
-            "latest_release_page": data["latest_release_page"],
-            "updated_at": datetime.utcnow().isoformat() + "Z",
-        },
-    )
-    write_json(
         WEBSITE_DIR / "downloads" / "release.json",
         {
             "version": version,
@@ -196,10 +181,14 @@ def main() -> int:
         },
     )
 
-    # realese.json — источник версий для автообновления лаунчера.
-    # Копия кладётся в корень репозитория и в website/ (публикуется на Pages).
-    write_json(WEBSITE_DIR / "realese.json", data)
-    write_json(ROOT / "realese.json", data)
+    # release.json — единственный источник данных для автообновления:
+    # название, версия, описание и ссылка на ZIP.
+    write_json(WEBSITE_DIR / "release.json", {
+        "name": f"Lylos Launcher {version}",
+        "version": version,
+        "description": "Новая версия Lylos Launcher уже доступна.",
+        "download_url": data["portable_download"],
+    })
 
     patch_index(version, repo)
     patch_script(version, repo)
