@@ -42,6 +42,30 @@ def find_managed_java(major: int) -> Path | None:
     return None
 
 
+def list_managed_java() -> list[dict]:
+    """Список скачанных managed-Java: [{"major", "path", "installed"}]."""
+    base = Path(os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local")) / "SM" / "java"
+    result: list[dict] = []
+    if not base.is_dir():
+        return result
+    for child in sorted(base.iterdir(), key=lambda p: p.name):
+        if not child.is_dir():
+            continue
+        try:
+            major = int(child.name)
+        except ValueError:
+            continue
+        java_exe = find_managed_java(major)
+        result.append(
+            {
+                "major": major,
+                "path": str(java_exe) if java_exe else "",
+                "installed": bool(java_exe),
+            }
+        )
+    return result
+
+
 def _open(url: str):
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     return urllib.request.urlopen(request, timeout=TIMEOUT)

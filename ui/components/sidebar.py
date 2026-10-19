@@ -37,6 +37,7 @@ class ClickableLogo(QWidget):
 class Sidebar(QWidget):
     page_changed = Signal(int)
     collapsed_changed = Signal(bool)
+    java_requested = Signal()
 
     def __init__(self):
         super().__init__()
@@ -86,9 +87,17 @@ class Sidebar(QWidget):
             ("instances", "Сборки", 1),
             ("mods", "Каталог", 2),
             ("servers", "Сервера", 3),
-            ("creeper", "О приложении", 9),
         ):
             self.root_layout.addWidget(self._nav(icon_name, title, index))
+
+        # Кнопка Java — под «Серверами», открывает отдельное окно.
+        self.java_button = SidebarButton("java", "Java", -1)
+        self.java_button.setCheckable(False)
+        self.java_button.clicked.connect(self.java_requested.emit)
+        self.buttons.append(self.java_button)
+        self.root_layout.addWidget(self.java_button)
+
+        self.root_layout.addWidget(self._nav("creeper", "О приложении", 9))
         self.root_layout.addStretch()
         self.root_layout.addWidget(self._nav("settings", "Настройки", 7))
 

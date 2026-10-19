@@ -149,6 +149,9 @@ class MainWindow(QMainWindow):
         self.sidebar = Sidebar()
         self.sidebar.page_changed.connect(self.change_page)
 
+        if hasattr(self.sidebar, "java_requested"):
+            self.sidebar.java_requested.connect(self.open_java_window)
+
         if hasattr(self.sidebar, "set_disabled_pages"):
             self.sidebar.set_disabled_pages(set())
 
@@ -436,6 +439,24 @@ class MainWindow(QMainWindow):
         if hasattr(self.sidebar, "refresh_theme"):
             self.sidebar.refresh_theme(theme)
         self.topbar.update_profile()
+
+    def open_java_window(self):
+        """Открыть отдельное окно управления Java (список и загрузка)."""
+        try:
+            from ui.components.java_manager_window import JavaManagerWindow
+
+            window = getattr(self, "_java_window", None)
+            if window is None:
+                window = JavaManagerWindow(self)
+                self._java_window = window
+            window.show()
+            window.raise_()
+            window.activateWindow()
+            window.refresh()
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).exception("Failed to open Java window")
 
     def change_page(self, index):
         if index == PageIndex.HOME and hasattr(self.home_page, "refresh"):

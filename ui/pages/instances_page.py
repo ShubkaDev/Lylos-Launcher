@@ -34,6 +34,34 @@ except Exception:
         return InstanceManager()
 
 from core.launcher import Launcher
+
+
+class ArchiveImportWorker(QThread):
+    """Фоновый импорт модов/миров, чтобы UI не подвисал."""
+
+    progress = Signal(int, str)
+    finished_ok = Signal(dict)
+    failed = Signal(str)
+
+    def __init__(self, instance: dict, path: str, kind: str, parent=None):
+        super().__init__(parent)
+        self.instance = instance
+        self.path = path
+        self.kind = kind
+
+    def run(self):
+        try:
+            from core.archive_importer import import_mods, import_worlds
+
+            importer = import_mods if self.kind == "mod" else import_worlds
+            result = importer(
+                self.instance,
+                self.path,
+                progress=lambda value, text: self.progress.emit(int(value), str(text)),
+            )
+            self.finished_ok.emit(result or {})
+        except Exception as error:
+            self.failed.emit(str(error))
 from core.download_manager import DownloadManager
 from core.version_manager import VersionManager
 from core.loader_manager import get_loader_manager
@@ -986,6 +1014,78 @@ class InstancesPage(QWidget):
         except Exception as error:
             QMessageBox.critical(self, "Ошибка импорта", str(error))
 
+    def _run_archive_import(self, instance, path, kind: str):
+        """Запустить импорт в фоне и показать окно прогресса."""
+        title = "Добавление мода" if kind == "mod" else "Добавление мира"
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(title)
+        dialog.setWindowModality(Qt.WindowModal)
+        dialog.setMinimumWidth(430)
+        dialog.setWindowFlags(dialog.windowFlags() & ~Qt.WindowCloseButtonHint)
+
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(22, 18, 22, 18)
+        layout.setSpacing(12)
+
+        heading = QLabel(title)
+        heading.setObjectName("PanelTitle")
+        status = QLabel("Подготовка...")
+        status.setObjectName("MutedText")
+        status.setWordWrap(True)
+
+        bar = QProgressBar()
+        bar.setRange(0, 100)
+        bar.setValue(0)
+        bar.setTextVisible(True)
+
+        layout.addWidget(heading)
+        layout.addWidget(status)
+        layout.addWidget(bar)
+        dialog.show()
+
+        worker = ArchiveImportWorker(instance, path, kind, self)
+        self._import_worker = worker
+
+        def on_progress(value: int, text: str):
+            bar.setValue(max(0, min(100, int(value))))
+            if text:
+                status.setText(text)
+
+        def on_done(result: dict):
+            dialog.close()
+            worker.deleteLater()
+            self._import_worker = None
+            self.refresh_instances()
+
+            if kind == "mod":
+                items = result.get("mods", [])
+                label = "Добавлено модов"
+            else:
+                items = result.get("worlds", [])
+                label = "Добавлено миров"
+
+            deleted = result.get("deleted_zips", [])
+            message = f"{label}: {len(items)}"
+            if items:
+                message += "\n\n" + "\n".join(items[:12])
+                if len(items) > 12:
+                    message += f"\n… и ещё {len(items) - 12}"
+            if deleted:
+                message += f"\n\nРаспаковано вложенных архивов: {len(deleted)}"
+            QMessageBox.information(self, "Готово", message)
+
+        def on_failed(error: str):
+            dialog.close()
+            worker.deleteLater()
+            self._import_worker = None
+            QMessageBox.critical(self, "Ошибка", error)
+
+        worker.progress.connect(on_progress)
+        worker.finished_ok.connect(on_done)
+        worker.failed.connect(on_failed)
+        worker.start()
+
     def add_mod_to_instance(self, instance):
         """Добавить мод(ы) в сборку: JAR напрямую или ZIP с распаковкой."""
         path, _ = QFileDialog.getOpenFileName(
@@ -996,23 +1096,7 @@ class InstancesPage(QWidget):
         )
         if not path:
             return
-        try:
-            from core.archive_importer import import_mods
-
-            result = import_mods(instance, path)
-            mods = result.get("mods", [])
-            deleted = result.get("deleted_zips", [])
-            message = f"Добавлено модов: {len(mods)}"
-            if mods:
-                message += "\n\n" + "\n".join(mods[:12])
-                if len(mods) > 12:
-                    message += f"\n… и ещё {len(mods) - 12}"
-            if deleted:
-                message += f"\n\nРаспаковано вложенных архивов: {len(deleted)}"
-            QMessageBox.information(self, "Готово", message)
-            self.refresh_instances()
-        except Exception as error:
-            QMessageBox.critical(self, "Ошибка", str(error))
+        self._run_archive_import(instance, path, "mod")
 
     def add_world_to_instance(self, instance):
         """Добавить мир(ы) в сборку: ZIP распаковывается до папок с level.dat."""
@@ -1024,20 +1108,4 @@ class InstancesPage(QWidget):
         )
         if not path:
             return
-        try:
-            from core.archive_importer import import_worlds
-
-            result = import_worlds(instance, path)
-            worlds = result.get("worlds", [])
-            deleted = result.get("deleted_zips", [])
-            message = f"Добавлено миров: {len(worlds)}"
-            if worlds:
-                message += "\n\n" + "\n".join(worlds[:12])
-                if len(worlds) > 12:
-                    message += f"\n… и ещё {len(worlds) - 12}"
-            if deleted:
-                message += f"\n\nРаспаковано вложенных архивов: {len(deleted)}"
-            QMessageBox.information(self, "Готово", message)
-            self.refresh_instances()
-        except Exception as error:
-            QMessageBox.critical(self, "Ошибка", str(error))
+        self._run_archive_import(instance, path, "world")

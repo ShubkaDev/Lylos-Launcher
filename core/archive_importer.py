@@ -24,6 +24,16 @@ logger = logging.getLogger(__name__)
 ZIP_SUFFIXES = {".zip", ".jar"}
 
 
+def _report(progress, value: int, text: str) -> None:
+    """Безопасно сообщить о прогрессе (percent, status text)."""
+    if progress is None:
+        return
+    try:
+        progress(int(value), str(text))
+    except Exception:
+        pass
+
+
 def _is_zip(path: Path) -> bool:
     try:
         return path.suffix.lower() in ZIP_SUFFIXES and zipfile.is_zipfile(path)
@@ -88,9 +98,11 @@ def _unique_target(directory: Path, name: str) -> Path:
     return target
 
 
-def import_worlds(instance: dict, archive_path: str | Path) -> dict:
+def import_worlds(instance: dict, archive_path: str | Path, progress=None) -> dict:
     """Распаковать архив и скопировать миры в ``saves/`` сборки.
 
+    ``progress`` — необязательный колбэк ``(percent: int, text: str)``,
+    чтобы UI мог показывать прогресс вместо зависания.
     Возвращает {"worlds": [...], "deleted_zips": [...]}.
     """
     archive_path = Path(archive_path)
@@ -109,22 +121,31 @@ def import_worlds(instance: dict, archive_path: str | Path) -> dict:
     extracted_zips: list[Path] = []
     try:
         # Распаковка исходного архива.
+        _report(progress, 3, "Открываем архив с мирами...")
         with zipfile.ZipFile(archive_path, "r") as zf:
-            for member in zf.infolist():
+            members = zf.infolist()
+            total = max(1, len(members))
+            for index, member in enumerate(members, start=1):
                 _safe_extract(zf, member, temp_dir)
+                if index % 10 == 0 or index == total:
+                    _report(progress, 5 + int(45 * index / total), "Распаковка архива...")
 
         # Рекурсивно распаковываем вложенные архивы.
+        _report(progress, 55, "Распаковка вложенных архивов...")
         nested = _extract_nested(temp_dir, extracted_zips)
 
+        _report(progress, 62, "Поиск миров...")
         worlds = _find_world_folders(temp_dir)
         if not worlds:
             raise RuntimeError("В архиве не найдены папки миров (нет level.dat).")
 
         imported = []
-        for world in worlds:
+        total_worlds = max(1, len(worlds))
+        for index, world in enumerate(worlds, start=1):
             target = _unique_target(saves_dir, world.name)
             shutil.copytree(world, target)
             imported.append(target.name)
+            _report(progress, 65 + int(30 * index / total_worlds), f"Копирование мира {target.name}...")
 
         # Удаляем вложенные архивы, которые распаковали (исходный не трогаем).
         for zip_path in nested:
@@ -133,16 +154,18 @@ def import_worlds(instance: dict, archive_path: str | Path) -> dict:
             except Exception:
                 pass
 
+        _report(progress, 100, "Готово")
         return {"worlds": imported, "deleted_zips": [p.name for p in nested]}
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
 
 
-def import_mods(instance: dict, file_path: str | Path) -> dict:
+def import_mods(instance: dict, file_path: str | Path, progress=None) -> dict:
     """Скопировать JAR-моды в ``mods/`` сборки.
 
     Если выбран ZIP — рекурсивно распаковывается до JAR-файлов.
     Если выбран JAR — просто копируется.
+    ``progress`` — необязательный колбэк ``(percent: int, text: str)``.
 
     Возвращает {"mods": [...], "deleted_zips": [...]}.
     """
@@ -158,8 +181,10 @@ def import_mods(instance: dict, file_path: str | Path) -> dict:
 
     # Прямой JAR — просто копируем.
     if file_path.suffix.lower() == ".jar":
+        _report(progress, 10, "Копирование мода...")
         target = _unique_target(mods_dir, file_path.name)
         shutil.copy2(file_path, target)
+        _report(progress, 100, "Готово")
         return {"mods": [target.name], "deleted_zips": []}
 
     if not _is_zip(file_path):
@@ -168,21 +193,30 @@ def import_mods(instance: dict, file_path: str | Path) -> dict:
     temp_dir = Path(tempfile.mkdtemp(prefix="sm_mods_"))
     extracted_zips: list[Path] = []
     try:
+        _report(progress, 3, "Открываем архив с модами...")
         with zipfile.ZipFile(file_path, "r") as zf:
-            for member in zf.infolist():
+            members = zf.infolist()
+            total = max(1, len(members))
+            for index, member in enumerate(members, start=1):
                 _safe_extract(zf, member, temp_dir)
+                if index % 10 == 0 or index == total:
+                    _report(progress, 5 + int(45 * index / total), "Распаковка архива...")
 
+        _report(progress, 55, "Распаковка вложенных архивов...")
         nested = _extract_nested(temp_dir, extracted_zips)
 
+        _report(progress, 62, "Поиск модов...")
         jars = [p for p in temp_dir.rglob("*.jar") if p.is_file()]
         if not jars:
             raise RuntimeError("В архиве не найдены JAR-файлы модов.")
 
         imported = []
-        for jar in jars:
+        total_jars = max(1, len(jars))
+        for index, jar in enumerate(jars, start=1):
             target = _unique_target(mods_dir, jar.name)
             shutil.copy2(jar, target)
             imported.append(target.name)
+            _report(progress, 65 + int(30 * index / total_jars), f"Копирование {target.name}...")
 
         for zip_path in nested:
             try:
@@ -190,6 +224,7 @@ def import_mods(instance: dict, file_path: str | Path) -> dict:
             except Exception:
                 pass
 
+        _report(progress, 100, "Готово")
         return {"mods": imported, "deleted_zips": [p.name for p in nested]}
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
