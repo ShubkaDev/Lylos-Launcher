@@ -42,6 +42,26 @@ def show_fatal_error(error: BaseException):
     message.exec()
 
 
+def clean_stale_update_dir():
+    """Удалить временную папку ``update`` после завершённого обновления.
+
+    Обновлятор кладёт файлы в ``update/`` и должен сам их убрать, но если
+    очистка не сработала (сбой, вложенные файлы), лаунчер на старте
+    дочищает её, чтобы не накапливался мусор.
+    """
+    try:
+        if getattr(sys, "frozen", False):
+            install = Path(sys.executable).resolve().parent
+        else:
+            appdata = Path(os.environ.get("APPDATA") or (Path.home() / "AppData" / "Roaming"))
+            install = appdata / "Lylos Launcher"
+        update_dir = install / "update"
+        if update_dir.is_dir():
+            shutil.rmtree(update_dir, ignore_errors=True)
+    except Exception:
+        pass
+
+
 def main():
     setup_logging()
     install_global_exception_hooks()
@@ -63,6 +83,8 @@ def main():
         log_proxy_environment()
 
         disable_proxy_for_launcher()
+
+        clean_stale_update_dir()
 
         logger.info("Checking proxy environment after cleanup")
         log_proxy_environment()
@@ -233,17 +255,18 @@ def main():
             appdata = Path(os.environ.get("APPDATA") or (Path.home() / "AppData" / "Roaming"))
             install_dir = launcher_dir if is_frozen else appdata / "Lylos Launcher"
             updater_dir = install_dir / "update"
-            updater_path = updater_dir / "SMUpdate.exe"
+            updater_path = updater_dir / "LylosUpdate.exe"
             updater_candidates = [
+                launcher_dir / "update" / "LylosUpdate.exe",
+                install_dir / "update" / "LylosUpdate.exe",
                 launcher_dir / "LylosUpdater.exe",
+                install_dir / "LylosUpdater.exe",
+                # legacy
                 launcher_dir / "SMUpdater.exe",
                 launcher_dir / "update" / "SMUpdate.exe",
-                launcher_dir / "update" / "LylosUpdater.exe",
                 launcher_dir / "update" / "SMUpdater.exe",
-                install_dir / "LylosUpdater.exe",
                 install_dir / "SMUpdater.exe",
                 install_dir / "update" / "SMUpdate.exe",
-                install_dir / "update" / "LylosUpdater.exe",
                 install_dir / "update" / "SMUpdater.exe",
             ]
             if not is_frozen:
