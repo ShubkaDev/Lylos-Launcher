@@ -157,6 +157,15 @@ class AuthProgressDialog(QDialog):
     def update_status(self, text: str):
         self.status_label.setText(str(text))
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        try:
+            from ui.animations import fade_in
+
+            fade_in(self, duration=200)
+        except Exception:
+            pass
+
     def show_error(self, text: str):
         self.status_label.setText(str(text))
         self.status_label.setStyleSheet("color: #FCA5A5; font-size: 13px;")

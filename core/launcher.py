@@ -156,12 +156,6 @@ class Launcher:
 
         active_skin = skin_manager.get_account_skin(active_account)
 
-        skin_support_needed = (
-            loader == "vanilla"
-            and bool(active_skin)
-        )
-        effective_loader = "fabric" if skin_support_needed else loader
-
         required_java = get_required_java_major(
             minecraft_dir=str(minecraft_dir),
             launch_version=minecraft_version,
@@ -218,13 +212,13 @@ class Launcher:
 
         launch_version = minecraft_version
 
-        if effective_loader != "vanilla":
-            self.set_status(f"Установка {effective_loader}...")
-            logger.info("Installing loader: %s", effective_loader)
+        if loader != "vanilla":
+            self.set_status(f"Установка {loader}...")
+            logger.info("Installing loader: %s", loader)
 
             loader_manager = LoaderManager()
             launch_version = loader_manager.install_loader(
-                loader_id=effective_loader,
+                loader_id=loader,
                 minecraft_version=minecraft_version,
                 minecraft_dir=str(minecraft_dir),
                 callback=callback,
@@ -296,25 +290,32 @@ class Launcher:
             options["jvmArguments"].insert(0, build_ely_javaagent_argument(authlib_jar))
             logger.info("Ely.by authlib-injector enabled: %s", authlib_jar)
 
-        # Локальная подготовка скина через CustomSkinLoader: она нужна и для
-        # offline-аккаунтов, и для Ely.by (скин которых мы скачали в data/skins),
-        # чтобы персонаж в Vanilla не выглядел как Steve.
-        if active_skin:
+        # Локальный PNG-скин применяется только в модовых сборках через
+        # CustomSkinLoader. В Vanilla моды не грузятся — поэтому НЕ подменяем
+        # загрузчик на Fabric и просто запускаем ванильную версию как есть.
+        skin_result = None
+        if active_skin and loader in {"fabric", "forge", "neoforge", "quilt"}:
             self.set_status("Подготовка локального скина для Minecraft...")
-        try:
-            skin_result = prepare_custom_skin_loader(
-                instance=instance,
-                account=active_account,
-                skin=active_skin,
-                set_status=self.set_status,
-                loader=effective_loader,
+            try:
+                skin_result = prepare_custom_skin_loader(
+                    instance=instance,
+                    account=active_account,
+                    skin=active_skin,
+                    set_status=self.set_status,
+                    loader=loader,
+                )
+                logger.info("CustomSkinLoader preparation: %s", skin_result.message)
+            except Exception as error:
+                logger.exception("CustomSkinLoader preparation failed")
+                raise RuntimeError(f"Не удалось применить скин: {error}") from error
+            if not skin_result.prepared:
+                raise RuntimeError(skin_result.message)
+        elif active_skin:
+            logger.info(
+                "Локальный скин пропущен: Vanilla не поддерживает локальные скины "
+                "(выбери Fabric/Forge/NeoForge/Quilt, чтобы применить скин)."
             )
-            logger.info("CustomSkinLoader preparation: %s", skin_result.message)
-        except Exception as error:
-            logger.exception("CustomSkinLoader preparation failed")
-            raise RuntimeError(f"Не удалось применить скин: {error}") from error
-        if active_skin and not skin_result.prepared:
-            raise RuntimeError(skin_result.message)
+            self.set_status("Vanilla: локальный скин не применяется")
 
         launcher_settings = get_launcher_settings()
         if launcher_settings.is_minecraft_resolution_enabled():

@@ -113,12 +113,22 @@ class Sidebar(QWidget):
         self.compact = compact
         self.setProperty("compact", compact)
         width = COMPACT_WIDTH if compact else EXPANDED_WIDTH
-        self.setFixedWidth(width)
+        try:
+            from ui.animations import animate_size
+
+            animate_size(self, self.width(), width, duration=220)
+        except Exception:
+            self.setFixedWidth(width)
         self.root_layout.setContentsMargins(4 if compact else 12, 14, 4 if compact else 12, 16)
         for button in self.buttons:
             button.setText("" if compact else button.full_text)
             button.setProperty("compact", compact)
-            button.setFixedWidth(48 if compact else 176)
+            try:
+                from ui.animations import animate_size as _animate_button
+
+                _animate_button(button, button.width(), 48 if compact else 176, duration=180)
+            except Exception:
+                button.setFixedWidth(48 if compact else 176)
             button.style().unpolish(button)
             button.style().polish(button)
         self.logo_title.setVisible(not compact)

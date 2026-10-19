@@ -465,6 +465,13 @@ class MainWindow(QMainWindow):
 
         self.pages.setCurrentIndex(index)
 
+        try:
+            from ui.animations import fade_in
+
+            fade_in(self.pages.currentWidget(), duration=200)
+        except Exception:
+            pass
+
         if index < len(self.page_meta):
             title, subtitle = self.page_meta[index]
             self.topbar.set_page(title, subtitle)

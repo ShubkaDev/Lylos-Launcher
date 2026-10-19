@@ -13,6 +13,7 @@ import webbrowser
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
+from urllib.parse import quote, urlsplit, urlunsplit
 
 from core.app_info import (
     APP_VERSION,
@@ -72,9 +73,21 @@ def repo_is_configured() -> bool:
     return bool(GITHUB_OWNER and GITHUB_REPO and "YOUR_GITHUB_USERNAME" not in GITHUB_OWNER)
 
 
+def _encode_url(url: str) -> str:
+    """Percent-encode non-ASCII characters in URL path/query.
+
+    urllib/http.client отправляет строку запроса в ASCII и падает с
+    ``UnicodeEncodeError`` на кириллице (например, тег релиза «Релизы»).
+    """
+    parts = urlsplit(str(url or ""))
+    path = quote(parts.path, safe="/%:@!$&'()*+,;=-._~")
+    query = quote(parts.query, safe="=&%:@!$'()*+,;/?-._~")
+    return urlunsplit((parts.scheme, parts.netloc, path, query, parts.fragment))
+
+
 def _request(url: str, timeout: int = 10, accept: str = "application/json"):
     request = urllib.request.Request(
-        url,
+        _encode_url(url),
         headers={
             "Accept": accept,
             "User-Agent": USER_AGENT,
@@ -295,7 +308,7 @@ def download_asset(asset: ReleaseAsset, progress_callback=None) -> Path:
         except Exception:
             pass
 
-    request = urllib.request.Request(asset.download_url, headers={"User-Agent": USER_AGENT})
+    request = urllib.request.Request(_encode_url(asset.download_url), headers={"User-Agent": USER_AGENT})
 
     with urllib.request.urlopen(request, timeout=45) as response:
         total = int(response.headers.get("content-length") or asset.size or 0)

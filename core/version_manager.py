@@ -45,3 +45,25 @@ class VersionManager:
         ]
 
         return snapshot_versions
+
+    def get_versions_by_types(self, types):
+        """Версии Minecraft указанных типов, в порядке Mojang."""
+        types = set(types)
+        versions = self.get_all_versions()
+        return [
+            version["id"]
+            for version in versions
+            if version.get("type") in types
+        ]
+
+    def get_old_beta_versions(self):
+        """Старые бета-версии (например, b1.7.3)."""
+        return self.get_versions_by_types({"old_beta"})
+
+    def get_old_alpha_versions(self):
+        """Старые альфа-версии (например, a1.2.6)."""
+        return self.get_versions_by_types({"old_alpha"})
+
+    def get_versions_for_creation(self):
+        """Все версии для выбора в UI: release + old_beta + old_alpha."""
+        return self.get_versions_by_types({"release", "old_beta", "old_alpha"})

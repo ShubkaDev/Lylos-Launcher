@@ -66,23 +66,21 @@ class CustomSkinLoaderTests(unittest.TestCase):
             self.assertIn("Vanilla", result.message)
             self.assertFalse((root / ".minecraft").exists())
 
-    def test_launcher_switches_vanilla_to_fabric_for_local_skin(self):
-        """Vanilla + выбранный скин → лаунчер сам поднимает Fabric со скином.
+    def test_vanilla_with_skin_does_not_install_fabric(self):
+        """Vanilla + выбранный скин → лаунчер НЕ подменяет сборку на Fabric.
 
-        Раньше тест ожидал отказ с ошибкой «Vanilla», но лаунчер теперь
-        прозрачно включает Fabric как загрузчик скина, чтобы персонаж не был
-        Steve. Проверяем именно это поведение: ставится loader fabric,
-        готовится CustomSkinLoader и игра запускается.
+        Локальный PNG-скин работает только в модовых сборках; тихая установка
+        Fabric убрана, чтобы старые версии (в т.ч. 1.0, beta/alpha) можно было
+        запускать как обычную Vanilla.
         """
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             source = root / "chosen.png"
             source.write_bytes(b"chosen skin")
             instance = {
-                "id": "test", "loader": "vanilla", "minecraft_version": "1.20.1",
+                "id": "test", "loader": "vanilla", "minecraft_version": "1.0",
                 "minecraft_dir": str(root / ".minecraft"),
             }
-            prepared = SimpleNamespace(prepared=True, message="ok", mod_path=None, skin_path=source)
 
             with patch.object(Launcher, "_check_disk_space"), patch.object(
                 Launcher, "_check_writable",
@@ -91,14 +89,14 @@ class CustomSkinLoaderTests(unittest.TestCase):
             ), patch(
                 "core.launcher.minecraft_launcher_lib.command.get_minecraft_command",
                 return_value=["java", "-jar", "client.jar"],
-            ), patch("core.launcher.get_required_java_major", return_value=17), patch(
+            ), patch("core.launcher.get_required_java_major", return_value=8), patch(
                 "core.launcher.find_java_executable", return_value="java",
-            ), patch("core.launcher.ensure_java_is_compatible", return_value=17), patch(
+            ), patch("core.launcher.ensure_java_is_compatible", return_value=8), patch(
                 "core.launcher.AccountManager",
             ) as manager, patch("core.skin_manager.SkinManager") as skins, patch(
                 "core.launcher.LoaderManager",
             ) as loader_cls, patch(
-                "core.custom_skin_loader.prepare_custom_skin_loader", return_value=prepared,
+                "core.custom_skin_loader.prepare_custom_skin_loader",
             ) as prepare, patch("core.launcher.get_instance_manager"), patch(
                 "core.launcher.subprocess.Popen",
             ) as popen:
@@ -110,15 +108,14 @@ class CustomSkinLoaderTests(unittest.TestCase):
                 }
                 skins.return_value.get_account_skin.return_value = {"path": str(source)}
                 skins.return_value.ensure_ely_skin.return_value = None
-                loader_cls.return_value.install_loader.return_value = "fabric-loader-0.15.11-1.20.1"
 
                 Launcher().launch_instance(instance)
 
-                self.assertEqual(
-                    loader_cls.return_value.install_loader.call_args.kwargs.get("loader_id"),
-                    "fabric",
-                )
-                prepare.assert_called_once()
+                # Fabric не устанавливается по-тихому.
+                loader_cls.return_value.install_loader.assert_not_called()
+                # Локальный скин не готовится в Vanilla.
+                prepare.assert_not_called()
+                # Игра всё равно запускается как vanilla.
                 popen.assert_called_once()
 
 

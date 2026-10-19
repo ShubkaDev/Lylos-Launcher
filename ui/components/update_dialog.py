@@ -205,3 +205,12 @@ class UpdateDialog(QDialog):
         """Показать окно. Возвращает True, если пользователь выбрал «Обновить»."""
         dialog = cls(release, parent)
         return dialog.exec() == QDialog.Accepted
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        try:
+            from ui.animations import fade_in
+
+            fade_in(self, duration=200)
+        except Exception:
+            pass

@@ -20,7 +20,7 @@ import sys
 import urllib.request
 import zipfile
 from pathlib import Path, PurePosixPath
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse, urlsplit, urlunsplit
 
 from PySide6.QtCore import QRectF, Qt, QThread, QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QIcon, QLinearGradient, QPainter, QPainterPath, QPen
@@ -157,6 +157,19 @@ class UpdaterBackground(QWidget):
         painter.end()
 
 
+def _encode_url(url: str) -> str:
+    """Percent-encode non-ASCII characters in URL path/query.
+
+    urllib/http.client отправляет строку запроса в ASCII и падает с
+    ``UnicodeEncodeError`` на кириллице (например, тег релиза «Релизы»).
+    Кодируем путь и query, сохраняя уже закодированные ``%XX``.
+    """
+    parts = urlsplit(str(url or ""))
+    path = quote(parts.path, safe="/%:@!$&'()*+,;=-._~")
+    query = quote(parts.query, safe="=&%:@!$'()*+,;/?-._~")
+    return urlunsplit((parts.scheme, parts.netloc, path, query, parts.fragment))
+
+
 class UpdateWorker(QThread):
     progress_changed = Signal(int)
     status_changed = Signal(str, str)
@@ -218,7 +231,7 @@ class UpdateWorker(QThread):
 
     def _fetch_release(self) -> dict[str, str]:
         request = urllib.request.Request(
-            self.release_json_url,
+            _encode_url(self.release_json_url),
             headers={"User-Agent": "LylosLauncher-Updater/1.0"},
         )
         with urllib.request.urlopen(request, timeout=20) as response:
@@ -237,7 +250,7 @@ class UpdateWorker(QThread):
 
     def _download_archive(self, download_url: str, archive_path: Path):
         self.status_changed.emit("Скачивание обновления...", "Загружаем ZIP-архив.")
-        request = urllib.request.Request(download_url, headers={"User-Agent": "LylosLauncher-Updater/1.0"})
+        request = urllib.request.Request(_encode_url(download_url), headers={"User-Agent": "LylosLauncher-Updater/1.0"})
         with urllib.request.urlopen(request, timeout=60) as response, archive_path.open("wb") as archive:
             total = int(response.headers.get("Content-Length", "0") or 0)
             received = 0

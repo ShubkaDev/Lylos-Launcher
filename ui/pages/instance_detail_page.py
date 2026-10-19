@@ -1097,7 +1097,7 @@ class InstanceDetailPage(QWidget):
         try:
             from core.version_manager import VersionManager
             vm = VersionManager()
-            versions = vm.get_release_versions()
+            versions = vm.get_versions_for_creation()
             if versions:
                 for v in versions:
                     self.version_combo.addItem(v)

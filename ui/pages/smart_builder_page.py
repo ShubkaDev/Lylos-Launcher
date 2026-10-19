@@ -237,7 +237,7 @@ class _VersionPickDialog(QDialog):
 
         try:
             vm = VersionManager()
-            versions = vm.get_release_versions()
+            versions = vm.get_versions_for_creation()
             for v in versions:
                 self.version_combo.addItem(v)
             idx = self.version_combo.findText("1.20.1")

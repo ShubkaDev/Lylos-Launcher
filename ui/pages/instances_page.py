@@ -306,7 +306,7 @@ class CreateInstanceDialog(QDialog):
         self._populate_versions()
 
         self.loader_combo = QComboBox()
-        self.loader_combo.addItems(["fabric", "vanilla", "forge", "neoforge", "quilt"])
+        self.loader_combo.addItems(["vanilla", "fabric", "forge", "neoforge", "quilt"])
         self.loader_combo.setToolTip("Для модов: fabric, forge, neoforge или quilt.")
 
         self.loader_version_selector = LoaderVersionSelector(self)
@@ -393,7 +393,7 @@ class CreateInstanceDialog(QDialog):
     def _populate_versions(self):
         try:
             vm = VersionManager()
-            versions = vm.get_release_versions()
+            versions = vm.get_versions_for_creation()
             if versions:
                 for v in versions:
                     self.version_combo.addItem(v)
